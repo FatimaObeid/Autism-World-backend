@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autism world</title>
+</head>
+<body>
+    <header><h1>Register</h1></header>
+    <div>
+
+        <form action="register.php" method="post" onsubmit="return ValidateRegisterform()">
+<label for="name">Full Name:</label>
+<input type="text" name="name" id="name" placeholder="Please Enter your name:">
+<label for="email">Email:</label>
+<input type="email" name="email" id="email" placeholder="Eneter your Email:">
+<label for="password">Password:</label>
+<input type="password" name="password" id="password" placeholder=" Enter your Email:">
+<label for="role" >Register As</label>
+<select name="role" id="role" required onchange="updateRoleFields(this)">
+<option value="" disabled></option>
+<option value="parent">Parent</option>
+<option value="specialists">Specialists</option>
+</select>
+<button type="submit">Register</button>
+        </form>
+        <p>Already have an account?<a href="login.html">Login here</a></p>
+    </div>
+</body>
+</html>

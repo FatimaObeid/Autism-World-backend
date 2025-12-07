@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autism World </title>
+    <script>
+function closeAllModals(){
+closeAddParentModal();
+closeAddSpecialistModal();
+closeUpdateParentModal();
+closeUpdateSpecialistModal();
+}
+function openAddParentModal(){
+    closeAllModals();
+    document.getElementById('add-parent-modal').style.display='block';
+}
+function closeAddParentModal(){
+    document.getElementById('add-parent-modal').style.display='none';
+}
+function openAddSpecialistModal(){
+closeAllModals();
+    document.getElementById('add-specialist-modal').style.display='block';
+}
+function closeAddSpecialistModal(){
+    document.getElementById('add-specialist-modal').style.display='none';
+}
+function openUpdateParentModal(){
+    closeAllModals();
+    document.getElementById('update-parent-modal').style.display='block';
+}
+function closeUpdateParentModal(){
+    document.getElementById('update-parent-modal').style.display='none';
+}
+function openUpdateSpecialistModal(){
+closeAllModals();
+document.getElementById('update-specialist-modal').style.display='block';
+
+}
+function closeUpdateSpecialistModal(){
+    document.getElementById('update-specialist-modal').style.display='none';
+}
+</script>
+</head>
+<body>
+    <header>
+<h1>Welcome Admin</h1>
+<nav>
+<ul>
+    <li> <a href="index.html">Home</a></li>
+    <li><a href="#manage-specialists"> Manage Specialists</a> </li>
+    <li ><a href="#manage-parents"> Manage Parents</a></li>
+    <li ><a href="Logout.html"></a>>Logout</li>
+</ul>
+</nav>
+<section id="manage-specialists">
+<h2>Manage Specialists</h2>
+<button onclick="openAddSpecialistModal()">Add Specialist</button>
+<table>
+<tr>
+<th>Name</th>
+<th>Specialization</th>
+<th>Actions</th>
+</tr>
+<tr>
+<td>Dr.Fadi</td>
+<td>Child psychiatrist</td>
+<td>
+    <button onclick="openUpdateSpecialistModal()" >Edit</button>
+    <button>Delete</button>
+</td>
+</tr>
+</table>
+</section>
+
+<section id="manage-parents">
+    <h2>Mange Parents</h2>
+    <button onclick="openAddParentModal()">Add Parent</button>
+    <table>
+<tr>
+<th>Name</th>
+<th>child Age</th>
+<th>Actions</th>
+</tr>
+<tr>
+<td>Fatima</td>
+<td>15</td>
+<td>
+    <button onclick="openUpdateParentModal()" >Edit</button>
+    <button>Delete</button>
+</td>
+</tr>
+</table>
+    
+</section>
+<div id="add-parent-modal" style="display: none;" class="modal content">
+<h2>Add Parent</h2>
+<form id="add-patient-modal">
+<label for="parent-name">Full Name:</label>
+<input type="text" name="parent-name" id="parent-name">
+<label for="parent-email">Email:</label>
+<input type="text" name="parent-email" id="parent-email">
+<label for="parent-pass">Password:</label>
+<input type="password" name="parent-pass" id="parent-pass">
+<button type="submit">Add Parent</button>
+<button onclick="closeAddParentModal()">Close</button>
+</form>
+</div>
+
+<div id="update-parent-modal" style="display: none;" class="modal content">
+<h2>Update Parent</h2>
+<form id="update-patient-modal">
+<label for="parent-new-name">Full Name:</label>
+<input type="text" name="parent-new-name" id="parent-new-name">
+<label for="parent-new-email">Email:</label>
+<input type="text" name="parent-new-email" id="parent-new-email">
+<label for="parent-new-pass">Password:</label>
+<input type="password" name="parent-new-pass" id="parent-new-pass">
+<button type="submit">Add Parent</button>
+<button onclick="closeUpdateParentModal()">Close</button>
+</form>
+</div>
+<div id="add-specialist-modal" style="display: none;" class="modal-content">
+<h2>Add specialist</h2>
+<form id="add-specialist-form">
+<label for="specialist-name">Full Name:</label>
+<input type="text" id="specialist-name" name="specialist-name" required>
+<label for="specialist-email">Email:</label>
+<input type="email" id="specialist-email" name="specialist-email" required>
+<label for="specialist-password">Password:</label>
+<input type="password"  id="specialist-password" name="specialist-password" required>
+<label for="specialist-specialization">Specialization:</label>
+<input type="text" id="specialist-specialization" name="specialist-specialization" required>
+<button type="submit">Add specialist</button>
+<button onclick="closeAddSpecialistModal()">Close</button>
+</form>
+</div>
+<div id="update-specialist-modal" style="display: none;" class="modal-content">
+<h2>update Specialist</h2>
+<form id="update-specialist-form">
+<label for="specialist-new-name">Full Name:</label>
+<input type="text" id="specialist-new-name" name="specialist-new-name" required>
+<label for="specialist-new-email">Email:</label>
+<input type="email" id="specialist-new-email" name="specialist-new-email" required>
+<label for="specialist-password">Password:</label>
+<input type="password"  id="specialist-new-password" name="doctor-new-password" required>
+<label for="specialist-specialization">Specialization:</label>
+<input type="text" id="specialist-new-specialization" name="doctor-new-specialization" required>
+<button type="submit">Update Specialist</button>
+<button onclick="closeUpdateSpecialistModal()">Close</button>
+</form>
+
+
+ 
+</div>
+    </header>
+</body>
+</html>

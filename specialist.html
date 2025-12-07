@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autism World</title>
+    <script>
+  function showDeclineMessage(){
+            alert('The appointment is declined')
+        }
+        function showApproveMessage(){
+            alert('The appointment is approved')
+        }
+    </script>
+</head>
+<body>
+    <header><h1>Welcome ,pychologist Chadi</h1>
+    <nav>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li> <a href="#appointments">View Appointments</a></li>
+<li><a href="manage-app">Manage Appointments</a></li>
+<li><a href="logout.html">Logout</a></li>
+</ul>
+    </nav>
+<section id="appoitments">
+<h2>Upcoming Appointments</h2>
+<table><tr>
+    <th>Parent</th>
+    <th>Date</th>
+</tr>
+<tr>
+<td>Leila Mortada</td>
+<td>2025-12-29</td>
+</tr>
+</table>
+</section>
+<section id="manage-app">
+<h2>Manage Appointments</h2>
+<table>
+<tr>
+<th>Patient</th>
+<th>Specialist</th>
+<th>Date</th>
+<th>Status</th>
+<th>Actions</th>
+
+</tr>
+<tr>
+<td>Maha Khoury</td>
+<td>Dr Fadi Maalouf (MD)</td>
+<td>2026-1-13</td>
+<td>Pending</td>
+<td><button onclick="showApproveMessage()">Approve</button></td>
+<td><button onclick="showDeclineMessage()">Decline</button></td>
+
+</tr>
+
+</table>
+
+
+
+
+</section>
+
+</header>
+</body>
+</html>
