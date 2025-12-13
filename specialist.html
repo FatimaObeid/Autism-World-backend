@@ -11,6 +11,9 @@
         function showApproveMessage(){
             alert('The appointment is approved')
         }
+  function volunteer(){
+    alert('Thank you for volunteering!We will contact you soon');
+  }      
     </script>
 </head>
 <body>
@@ -19,7 +22,9 @@
 <ul>
 <li><a href="index.html">Home</a></li>
 <li> <a href="#appointments">View Appointments</a></li>
-<li><a href="manage-app">Manage Appointments</a></li>
+<li><a href="#manage-app">Manage Appointments</a></li>
+<li><a href="#availability">Specialist Availability</a></li>
+<li><a href="#volunteering">Volunteer</a></li>
 <li><a href="logout.html">Logout</a></li>
 </ul>
     </nav>
@@ -57,12 +62,52 @@
 </tr>
 
 </table>
+</section>
+<section id="availability">
+<h2>pychologist Chadi Availability:</h2>
+<ul>
+    <li>Monday: 9:00 - 12:00</li>
+    <li>thursday: 1:00 - 4:00</li>
+    <li>Friday: 10:00 - 2:00</li>
+</ul>
+</section>
+<section id="volunteering">
+<h2>volunteering Opprtunities</h2>
+<table>
+<tr>
+    <th>Activity</th>
+    <th>Date</th>
+    <th>Location</th>
+    <th>Action</th>
+</tr>
+<tr>
+    <td>Child Therapy Support</td>
+    <td>2026-02-10</td>
+    <td>Beirut</td>
+    <td><button onclick="volunteer()">Join</button></td>
+</tr>
+<tr>
+<td>Awarness Workshop</td>
+<td>2026-01-5</td>
+<td><button onclick="volunteer()">Join</button></td>
+</tr>
+
+
+
+
+
+
+
+</table>
+
+
+
+
 
 
 
 
 </section>
-
 </header>
 </body>
 </html>
