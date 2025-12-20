@@ -14,3 +14,11 @@ function ValidateRegisterform(){
     alert(`Registration successful!\nName:${name}\nEmail:${email}\nRole:${role}`);
 return true;
 }
+function showDescriptionBox(show){
+    const box=document.getElementById('descriptionBox');
+    if(show){
+        box.style.display='block';
+    }
+    else
+        box.style.display='none';
+}
