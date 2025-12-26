@@ -3,8 +3,30 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+use App\Models\User;
+use App\Models\Appointment;
+use App\Models\ParentProfile;
 
 class Specialist extends Model
 {
-    //
+    use HasFactory;
+
+    protected $fillable=['id','specialization','license'];
+    public $incrementing=false;
+    protected $primaryKey='id';
+
+    public function user(){
+        $this->belongsTo(User::class,'id');
+    }
+
+    public function appointments(){
+        return $this->hasMany(Appointment::class,'specialist_id');
+    }
+
+    public function parents(){
+        return $this->belongsToMany(ParentProfile::class,'appointments','specialist_id','parent_profile_id')
+        ->withPivot('appointment_time','status')->withTimestamps();
+    }
 }
