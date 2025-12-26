@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admins',function(Blueprint $table){
+        Schema::create('parent_profiles', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
-            $table->string('department')->nullable();
             $table->timestamps();
-            $table->foreing('id')->references('id')->on('users')->onDelete('cascade');
-
+            $table->date('dob')->nullable();
+            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('parent_profiles');
     }
 };
