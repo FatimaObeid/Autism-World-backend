@@ -17,7 +17,7 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function showRegisterForm(): View
     {
         return view('auth.register');
     }
@@ -27,24 +27,52 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function register(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        $validated=$request->validate([
+            'name' => 'required| string |max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+            'role'=>'required|in:parentprofile,specialist',
+
+            'dob'=>'nullable|date',
+            'phonenumber'=>'nullable|string|max:255',
+            'address'=>'nullable|string|max:255',
+            'specialization'=>'nullable|string|max:255',
+            'license'=>'nullable|string|max:255',
+
+
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role'=>$validated['role'],
         ]);
 
-        event(new Registered($user));
+        if($validated['role']==='parentprofile'){
+            ParentProfile::create([
+               'id' => $user->id,
+               'dob' => $validated['dob'] ?? null,
+               'phonenumber'=>$validated['phonenumber']??null,
+               'address'=>$validated['address']??null,
+
+            ]);
+
+        }
+            else if($validated['role']==='doctor'){
+                Specialist::create([
+                    'id'=>$user->id,
+                    'specialization'=>$validated['specialization']??null,
+                    'license'=>$validated['license']??null,
+                ]);
+            }
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route(
+          $user->isSpecialist() ? 'specialist.dashboard' : 'parent.dashboard'
+);
     }
 }

@@ -24,6 +24,7 @@
             document.getElementById("date_update").value = date;
         }
     </script>
+    <script src="script.js"></script>
 
 
     <link rel="stylesheet" href="stylesheet.css">
@@ -51,12 +52,16 @@
 
         <form action="book_appointment.php" method="POST">
             <label for="specialist">Choose a Specialist:</label>
-            <select id="specialist" name="specialist" onchange="showInfo(this.value)">
+            <select id="specialist" name="specialist" onchange="showSpecialistInfo(this.value)">
                 <option value="psychologist_karam">Dr. Karam (Psychologist)</option>
                 <option value="spl_maya">Maya Haddad (Speech Therapist)</option>
             </select>
             <label for="date">Select Date:</label>
             <input type="date" id="date" name="date" onchange=" validateAppointmentDate(this)" required>
+            <label for="phonenumber">Phone number:</label>
+            <input type="text" id="phonenumber" required>
+            <label for="address">Home Address:</label>
+            <input type="text" id="phonenumber" required>
             <button type="submit" onclick="showBookConfirmation()">Book</button>
         </form>
     </section>

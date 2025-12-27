@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class ParentProfile extends Model
 {
     use HasFactory;
-    
-    protected $fillable=['id','dob','insurance'];
+
+    protected $fillable=['id','dob','phonenumber','address'];
     public $incrementing=false;
     protected $primaryKey='id';
 
@@ -20,7 +20,7 @@ class ParentProfile extends Model
     }
 
     public function appointments(){
-        return $this->hasMany(Appointment::class,'parent_profile_id');
+        return $this->hasMany(Appointment::class,'parentprofile_id');
     }
 
     public function specialists(){
