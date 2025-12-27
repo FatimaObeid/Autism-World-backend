@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <script src="script.js"></script>
+    <script>
+        function showDeleteConfirmation() {
+            alert("Your appointment has been deleted.");
+        }
+
+        function showUpdateConfirmation() {
+            alert("Your appointment has been updated")
+        }
+
+        function closeUpdateModal() {
+            document.getElementById("update-modal").style.display = "none";
+        }
+
+        function openUpdateModal(appointmentId, doctor, date) {
+            document.getElementById("update-modal").style.display = "block";
+            document.getElementById("appointment_id_update").value = appointmentId;
+            document.getElementById("doctor_update").value = doctor;
+            document.getElementById("date_update").value = date;
+        }
+    </script>
+
+
+    <link rel="stylesheet" href="stylesheet.css">
+</head>
+
+
+<body>
+
+    <header>
+        <h1>Welcome, Parent</h1>
+        <p>Your space to book, manage, and track your child's appointments.</p>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#book">Book Appointment</a></li>
+                <li><a href="#manage">Manage Appointment</a></li>
+                <li><a href="logout.html">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="book">
+        <h2>Book an Appointment</h2>
+        <p>Select a specialist and choose the best time for your child.</p>
+
+        <form action="book_appointment.php" method="POST">
+            <label for="specialist">Choose a Specialist:</label>
+            <select id="specialist" name="specialist" onchange="showInfo(this.value)">
+                <option value="psychologist_karam">Dr. Karam (Psychologist)</option>
+                <option value="spl_maya">Maya Haddad (Speech Therapist)</option>
+            </select>
+            <label for="date">Select Date:</label>
+            <input type="date" id="date" name="date" onchange=" validateAppointmentDate(this)" required>
+            <button type="submit" onclick="showBookConfirmation()">Book</button>
+        </form>
+    </section>
+
+    <section id="manage">
+        <h2>My Appointments</h2>
+        <table>
+            <tr>
+                <th>Specialist</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            <tr>
+                <td>Speech Therapist</td>
+                <td>2025-02-25</td>
+                <td><span class="status pending">Pending</span></td>
+                <td>
+                    <button onclick="openUpdateModal('1','speech_therapist','2025-02-25')">Update</button>
+                    <form action="delete_appointment.php" method="POST">
+                        <input type="hidden" name="appointmentID" value="1">
+                        <button class="delete-btn" type="submit" onclick="showDeleteConfirmation()">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <div id="update-modal" style="display:none;" class="modal-content">
+        <h2>Update Your Child's Appointment</h2>
+        <form action="update_appointment.php" method="POST">
+            <label>Appointment ID:</label>
+            <input type="text" id="appointment_id_update" name="appointmentID" readonly>
+            <label>Choose a New Specialist:</label>
+            <select id="doctor_update" name="doctor">
+                <option value="psychologist_karam">Dr. Karam (Psychologist)</option>
+                <option value="spl_maya">Maya Haddad (Speech Therapist)</option>
+            </select>
+            <label>Select New Date:</label>
+            <input type="date" name="date" id="date_update" required>
+            <button type="submit" onclick="showUpdateConfirmation() ">Update Appointment</button>
+            <button onclick="closeUpdateModal()">Close</button>
+        </form>
+    </div>
+
+    <section id="tips">
+        <h2>Helpful Tips for Parents</h2>
+        <ul>
+            <li>💙 Keep a consistent daily routine</li>
+            <li>🗣️ Encourage simple communication</li>
+            <li>📅 Attend therapy sessions regularly</li>
+            <li>🌟 Celebrate small progress</li>
+        </ul>
+    </section>
+</body>
+
+</html>

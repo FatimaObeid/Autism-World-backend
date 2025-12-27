@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use App\Models\Specialist;
+use App\Models\ParentProfile;
+use App\Models\Admin;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -21,6 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -32,6 +37,32 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function specialist(){
+        return $this->hasOne(Specialist::class,'id');
+    }
+
+    public function parent(){
+        return $this->hasOne(ParentProfile::class,'id');
+    }
+
+    public function admin(){
+        return $this->hasOne(Admin::class,'id');
+    }
+
+    public function isSpecialist(){
+        return $this->role=== 'specialist';
+    }
+
+    public function isParent(){
+        return $this->role=== 'parent';
+    }
+
+    public function isAdmin(){
+        return $this->role=== 'admin';
+    }
+
+
 
     /**
      * Get the attributes that should be cast.
