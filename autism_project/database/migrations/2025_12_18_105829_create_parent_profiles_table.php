@@ -16,6 +16,9 @@ return new class extends Migration
             $table->timestamps();
             $table->date('dob')->nullable();
             $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('gender')->default('male');
+            $table->string('address');
+            $table->string('phone');
         });
     }
 

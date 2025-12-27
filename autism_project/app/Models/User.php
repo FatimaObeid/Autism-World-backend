@@ -51,15 +51,15 @@ class User extends Authenticatable
     }
 
     public function isSpecialist(){
-        return $this->role==='specialist';
+        return $this->role=== 'specialist';
     }
 
     public function isParent(){
-        return $this->role==='parent';
+        return $this->role=== 'parent';
     }
 
     public function isAdmin(){
-        return $this->role==='admin';
+        return $this->role=== 'admin';
     }
 
 
