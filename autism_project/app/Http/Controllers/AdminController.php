@@ -11,10 +11,11 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
-    public function dashboard(){
+    public function dashboard()
+    {
         $specialists = Specialist::with('user')->get();
         $parents = ParentProfile::with('user')->get();
-        return view('admin.dashboard',[
+        return view('admin.dashboard', [
             'specialists' => $specialists,
             'parents'     => $parents,
         ]);
@@ -24,99 +25,102 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
             'email'   => 'required|email|unique:users,email',
-            'password'=> 'required|string|min:6',
+            'password' => 'required|string|min:6',
             'specialization' => 'required|string|max:255',
             'license'        => 'nullable|string|max:255',
         ]);
-    $user = User::create([
-        'name'   =>$validated['name'],
-        'email'  =>$validated['email'],
-        'password' => Hash::make($validated['password']),
-        'role'    =>'doctor',
-     ]);
-     Specialist::create([
-        'id'     =>$user->id,
-        'specialization'   => $validated['specialization'] ?? null,
-        'license'          =>$validated['license'] ??null,
-     ]);
-     return redirect()
-     ->route('admin.dashboard')
-     ->with('success' , 'Specialist has been successfully added');
- }
- public function updateSpecialist(Request $request ,$id){
-$specialist = Specialist::with('user')->findOrFail($id);
-$user = $specialist->user;
-  $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|unique:users,email,'  . $user->id,
-            'password'=> 'required|string|min:6',
+        $user = User::create([
+            'name'   => $validated['name'],
+            'email'  => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'    => 'doctor',
+        ]);
+        Specialist::create([
+            'id'     => $user->id,
+            'specialization'   => $validated['specialization'] ?? null,
+            'license'          => $validated['license'] ?? null,
+        ]);
+        return redirect()
+            ->route('admin.dashboard')
+            ->with('success', 'Specialist has been successfully added');
+    }
+    public function updateSpecialist(Request $request, $id)
+    {
+        $specialist = Specialist::with('user')->findOrFail($id);
+        $user = $specialist->user;
+        $validated = $request->validate([
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email,'  . $user->id,
+            'password'       => 'required|string|min:6',
             'specialization' => 'required|string|max:255',
             'license'        => 'nullable|string|max:255',
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        if(!empty($validated['password'])){
+        if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
         $user->save();
-    $specialist->update([
-        'specialization' => $validated['specialization'],
-        'license'        =>$validated['license'],
-    ]);
+        $specialist->update([
+            'specialization' => $validated['specialization'],
+            'license'        => $validated['license'],
+        ]);
 
-return redirect()->route('admin.dashboard')->with('success','Specialist updated successfully');
-}
+        return redirect()->route('admin.dashboard')->with('success', 'Specialist updated successfully');
+    }
 
-public function deleteSpecialist($id){
-    $specialist= Specialist::with('user')->findOrFail($id);
-    $user=$specialist->user;
-    $specialist->delete();
-    $user->delete();
-    return redirect()
-    ->route('admin.dashboard')
-    ->with('success','Specialist deleted successfully');
-}
+    public function deleteSpecialist($id)
+    {
+        $specialist = Specialist::with('user')->findOrFail($id);
+        $user = $specialist->user;
+        $specialist->delete();
+        $user->delete();
+        return redirect()
+            ->route('admin.dashboard')
+            ->with('success', 'Specialist deleted successfully');
+    }
 
 
-public function saveParent(Request $request)
-{
-$validated = $request->validate([
-        'name'    => 'required|string|max:255',
-        'email'   => 'required|email|unique:users,email',
-        'password'=> 'required|string|min:6',
-        'dob'     => 'nullable|date',
-        'phone'   => 'required|string|max:20',
-        'address' => 'nullable|string|max:255',
-        'gender'  => 'nullable|string|max:255',
-]);
+    public function saveParent(Request $request)
+    {
+        $validated = $request->validate([
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'dob'     => 'nullable|date',
+            'phone'   => 'required|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'gender'  => 'nullable|string|max:255',
+        ]);
 
-$user = User::create([
-    'name'     =>$validated['name'],
-    'email'    =>$validated['email'],
-    'password' => Hash::make($validated['password']),
-    'role'     => 'parent',   
-]);
+        $user = User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => 'parent',
+        ]);
 
-ParentProfile::create([
-    'id'      =>$user->id,
-    'dob'     =>$validated['dob'],
-    'phone'   =>$validated['phone'],
-    'address' =>$validated['address'] ?? null, 
-    'gender'  =>$validated['gender'] ?? null,
-]);
- return redirect()
- ->route('admin.dashboard')
- ->with('success','Parent has been added successfully');
-  }
+        ParentProfile::create([
+            'id'      => $user->id,
+            'dob'     => $validated['dob'],
+            'phone'   => $validated['phone'],
+            'address' => $validated['address'] ?? null,
+            'gender'  => $validated['gender'] ?? null,
+        ]);
+        return redirect()
+            ->route('admin.dashboard')
+            ->with('success', 'Parent has been added successfully');
+    }
 
-public function updateParent(Request $request ,$id){
-$parentprofile = ParentProfile::with('user')->findOrFail($id);
-$user = $parentprofile->user;
-  $validated = $request->validate([
+    public function updateParent(Request $request, $id)
+    {
+        $parentprofile = ParentProfile::with('user')->findOrFail($id);
+        $user = $parentprofile->user;
+        $validated = $request->validate([
             'name'    => 'required|string|max:255',
             'email'   => 'required|email|unique:users,email,'  . $user->id,
-            'password'=> 'required|string|min:6',
+            'password' => 'required|string|min:6',
             'dob'     => 'nullable|date',
             'phone'   => 'required|string|max:20',
             'address' => 'nullable|string|max:255',
@@ -125,27 +129,27 @@ $user = $parentprofile->user;
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
-        if(!empty($validated['password'])){
+        if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
         $user->save();
-    $parentprofile->update([
-        'dob' => $validated['dob'],
-        'phone'        =>$validated['phone'],
-        'address'        =>$validated['address'],
-        'gender'        =>$validated['gender'],
-    ]);
+        $parentprofile->update([
+            'dob' => $validated['dob'],
+            'phone'        => $validated['phone'],
+            'address'        => $validated['address'],
+            'gender'        => $validated['gender'],
+        ]);
 
-return redirect()->route('admin.dashboard')->with('success','Parent updated successfully');
-}
-public function deleteParent($id){
-    $parentprofile= ParentProfile::with('user')->findOrFail($id);
-    $user=$parentprofile->user;
-    $parentprofile->delete();
-    $user->delete();
-    return redirect()
-    ->route('admin.dashboard')
-    ->with('success','Parent deleted successfully');
-}
-
+        return redirect()->route('admin.dashboard')->with('success', 'Parent updated successfully');
+    }
+    public function deleteParent($id)
+    {
+        $parentprofile = ParentProfile::with('user')->findOrFail($id);
+        $user = $parentprofile->user;
+        $parentprofile->delete();
+        $user->delete();
+        return redirect()
+            ->route('admin.dashboard')
+            ->with('success', 'Parent deleted successfully');
+    }
 }

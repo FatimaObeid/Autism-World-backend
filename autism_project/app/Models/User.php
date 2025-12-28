@@ -11,6 +11,11 @@ use App\Models\Specialist;
 use App\Models\ParentProfile;
 use App\Models\Admin;
 
+/**
+ * @method bool isAdmin()
+ * @method bool isParent()
+ * @method bool isSpecialist()
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -38,29 +43,37 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function specialist(){
-        return $this->hasOne(Specialist::class,'id');
+    public function specialist()
+    {
+        return $this->hasOne(Specialist::class, 'id');
     }
 
-    public function parent(){
-        return $this->hasOne(ParentProfile::class,'id');
+    public function parent()
+    {
+        return $this->hasOne(ParentProfile::class, 'id');
     }
 
-    public function admin(){
-        return $this->hasOne(Admin::class,'id');
+    public function admin()
+    {
+        return $this->hasOne(Admin::class, 'id');
     }
 
-    public function isSpecialist(){
-        return $this->role=== 'specialist';
+    public function isSpecialist()
+    {
+        return $this->role === 'specialist';
     }
 
-    public function isParent(){
-        return $this->role=== 'parent';
+    public function isParent()
+    {
+        return $this->role === 'parent';
     }
 
-    public function isAdmin(){
-        return $this->role=== 'admin';
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
     }
+
+
 
 
 

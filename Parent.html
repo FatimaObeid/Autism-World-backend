@@ -4,26 +4,8 @@
 <head>
 
     <script src="script.js"></script>
-    <script>
-        function showDeleteConfirmation() {
-            alert("Your appointment has been deleted.");
-        }
-
-        function showUpdateConfirmation() {
-            alert("Your appointment has been updated")
-        }
-
-        function closeUpdateModal() {
-            document.getElementById("update-modal").style.display = "none";
-        }
-
-        function openUpdateModal(appointmentId, doctor, date) {
-            document.getElementById("update-modal").style.display = "block";
-            document.getElementById("appointment_id_update").value = appointmentId;
-            document.getElementById("doctor_update").value = doctor;
-            document.getElementById("date_update").value = date;
-        }
-    </script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
 
     <link rel="stylesheet" href="stylesheet.css">
