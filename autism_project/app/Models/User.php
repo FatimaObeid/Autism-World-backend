@@ -65,7 +65,7 @@ class User extends Authenticatable
 
     public function isParent()
     {
-        return $this->role === 'parent';
+        return $this->role === 'parentprofile';
     }
 
     public function isAdmin()

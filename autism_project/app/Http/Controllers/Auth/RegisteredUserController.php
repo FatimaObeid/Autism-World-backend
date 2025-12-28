@@ -34,10 +34,10 @@ class RegisteredUserController extends Controller
             'role' => 'required|in:parentprofile,specialist',
 
             'dob' => 'nullable|date',
-            'phonenumber' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
+            'phonenumber'    => 'nullable|string|max:255',
+            'address'        => 'nullable|string|max:255',
             'specialization' => 'nullable|string|max:255',
-            'license' => 'nullable|string|max:255',
+            'license'        => 'nullable|string|max:255',
 
 
         ]);
@@ -58,7 +58,7 @@ class RegisteredUserController extends Controller
                 'address' => $validated['address'] ?? null,
 
             ]);
-        } else if ($validated['role'] === 'doctor') {
+        } else if ($validated['role'] === 'specialist') {
             Specialist::create([
                 'id' => $user->id,
                 'specialization' => $validated['specialization'] ?? null,
@@ -69,7 +69,7 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route(
-            $user->isSpecialist() ? 'specialist.dashboard' : 'parent.dashboard'
+            $user->isSpecialist() ? 'specialist.dashboard' : 'parentprofile.dashboard'
         );
     }
 }
