@@ -24,7 +24,7 @@ class ParentProfile extends Model
     }
 
     public function child(){
-        return $this->hasOne(Child::class,'parent_profile_id');
+        return $this->hasOne(Child::class,'parentprofile_id');
     }
 
 
