@@ -24,9 +24,15 @@ Route::post('/logout',[AuthenticatedSessionController::class,'logout'])->name('l
 
 
 Route::middleware(['auth','role:parent'])->prefix('parent')->group(function(){
+<<<<<<< HEAD
+Route::get('/dashboard',[ParentProfileController::class,'dashboard'])->name('parent.dashboard');
+Route::post('/appointments',[ParentProfileController::class,'storeAppointment'])->name('parent.appointments.store');
+Route::put('/appointments/{id}',[ParentProfileController::class,'updateAppointment'])->name('parents.appoitments.update');
+=======
 Route::get('/dashboard',[ParentProfileController::class,'dashboard'])->name('parentprofile.dashboard');
 Route::post('/appointments',[ParentProfileController::class,'storeappointment'])->name('parent.appointments.store');
 Route::put('/appointments/{id}',[ParentProfileController::class,'updateAppointment'])->name('parent.appoitments.update');
+>>>>>>> 3ddfe504ba6f646a5cf9cc58c79f1cb42de2d953
 Route::delete('/appointments/{id}',[ParentProfileController::class,'deleteAppointment'])->name('parent.appointments.delete');
 });
 
