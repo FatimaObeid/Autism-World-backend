@@ -30,7 +30,7 @@ class RegisteredUserController extends Controller
         $validated = $request->validate([
             'name'     => 'required| string |max:255',
             'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:6',
             'role' => 'required|in:parentprofile,specialist',
 
             'dob' => 'nullable|date',

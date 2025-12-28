@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use App\Models\Appointment;
 use App\Models\Specialist;
 use Illuminate\Support\Facades\Auth;
+use App\Models\VolunteeringOpportunity;
 
 class SpecialistController extends Controller
 {
@@ -15,6 +16,7 @@ class SpecialistController extends Controller
     {
         $user = Auth::user();
         $specialist = $user->specialist;
+        $volunteeringOpportunities = VolunteeringOpportunity::get();
         $appointments = Appointment::with(['parentprofile.user'])
             ->where('specialist_id', $specialist->id)
             ->orderBy('appointment_time', 'asc')
@@ -24,6 +26,7 @@ class SpecialistController extends Controller
             'user' => $user,
             'specialist' => $specialist,
             'appointments' => $appointments,
+            'volunteeringOpportunities' => $volunteeringOpportunities
         ]);
     }
 
@@ -31,6 +34,7 @@ class SpecialistController extends Controller
     {
         $user = Auth::user();
         $specialist = $user->specialist;
+
 
         $appointment = Appointment::where('id', $id)
             ->where('specialist_id', $specialist->id)

@@ -23,10 +23,8 @@ class ParentProfile extends Model
         return $this->hasMany(Appointment::class,'parentprofile_id');
     }
 
-    public function specialists(){
-        return $this->belongsToMany(Specialist::class,'appointments','parent_profile_id','specialist_id')
-        ->withPivot('appointment_time','status')
-        ->withTimeStamps();
+    public function child(){
+        return $this->hasOne(Child::class,'parent_profile_id');
     }
 
 

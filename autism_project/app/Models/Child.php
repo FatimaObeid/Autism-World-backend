@@ -10,8 +10,8 @@ use App\Models\ParentProfile;
 class Child extends Model
 {
     use HasFactory;
-    protected $fillable=['parentprofile_id','firstname','lastname','dob','gender','autismtype'];
+    protected $fillable=['parent_profile_id','first_name','last_name','dob','gender','autism_type'];
     public function parent(){
-        return $this->belongsTo(ParentProfile::class,'parentprofile_id');
+        return $this->belongsTo(ParentProfile::class,'parent_profile_id');
     }
 }
