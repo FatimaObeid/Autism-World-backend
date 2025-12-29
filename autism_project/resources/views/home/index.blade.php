@@ -6,7 +6,7 @@
     <p>Your trusted community for autism care and support</p>
     <br>
     <a href="{{ route('login') }}" class="btn">Login</a><br>
-    <a href="{{ route('register') }}" class="btn btn-outline">Register</a>
+    <a href="{{ route('register.submit') }}" class="btn btn-outline">Register</a>
 </section>
 <nav>
     <ul>

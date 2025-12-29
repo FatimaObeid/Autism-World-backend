@@ -2,6 +2,7 @@
 @section('content')
 <header>
     <div>
+        <h1>Login</h1>
         @if($errors->any())
         <p style="color:red;">
             {{ $errors->first() }}

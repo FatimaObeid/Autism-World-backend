@@ -12,6 +12,7 @@ use App\Http\Controllers\HomeController;
 
 
 
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/login', [AuthenticatedSessionController::class, 'showloginform'])->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'login'])->name('login.submit');
