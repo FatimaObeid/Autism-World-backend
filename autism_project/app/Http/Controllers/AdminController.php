@@ -23,20 +23,20 @@ class AdminController extends Controller
     public function saveSpecialist(Request $request)
     {
         $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email',
+            'password'       => 'required|string|min:6',
             'specialization' => 'required|string|max:255',
             'license'        => 'nullable|string|max:255',
         ]);
         $user = User::create([
-            'name'   => $validated['name'],
-            'email'  => $validated['email'],
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role'    => 'doctor',
+            'role'    => 'specialist',
         ]);
         Specialist::create([
-            'id'     => $user->id,
+            'id'               => $user->id,
             'specialization'   => $validated['specialization'] ?? null,
             'license'          => $validated['license'] ?? null,
         ]);
@@ -85,13 +85,13 @@ class AdminController extends Controller
     public function saveParent(Request $request)
     {
         $validated = $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|unique:users,email',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'dob'     => 'nullable|date',
-            'phone'   => 'required|string|max:20',
-            'address' => 'nullable|string|max:255',
-            'gender'  => 'nullable|string|max:255',
+            'dob'      => 'nullable|date' ?? null,
+            'phone'    => 'required|string|max:20',
+            'address'  => 'nullable|string|max:255',
+
         ]);
 
         $user = User::create([
@@ -103,10 +103,10 @@ class AdminController extends Controller
 
         ParentProfile::create([
             'id'      => $user->id,
-            'dob'     => $validated['dob'],
+            'dob'     => $validated['dob'] ?? null,
             'phone'   => $validated['phone'],
             'address' => $validated['address'] ?? null,
-            'gender'  => $validated['gender'] ?? null,
+
         ]);
         return redirect()
             ->route('admin.dashboard')
@@ -124,7 +124,7 @@ class AdminController extends Controller
             'dob'     => 'nullable|date',
             'phone'   => 'required|string|max:20',
             'address' => 'nullable|string|max:255',
-            'gender'  => 'nullable|string|max:255',
+
         ]);
 
         $user->name = $validated['name'];
@@ -137,7 +137,7 @@ class AdminController extends Controller
             'dob' => $validated['dob'],
             'phone'        => $validated['phone'],
             'address'        => $validated['address'],
-            'gender'        => $validated['gender'],
+
         ]);
 
         return redirect()->route('admin.dashboard')->with('success', 'Parent updated successfully');

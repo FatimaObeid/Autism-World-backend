@@ -11,11 +11,7 @@ use App\Models\Specialist;
 use App\Models\ParentProfile;
 use App\Models\Admin;
 
-/**
- * @method bool isAdmin()
- * @method bool isParent()
- * @method bool isSpecialist()
- */
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -48,9 +44,9 @@ class User extends Authenticatable
         return $this->hasOne(Specialist::class, 'id');
     }
 
-    public function parent()
+    public function parentProfile()
     {
-        return $this->hasOne(ParentProfile::class, 'id');
+        return $this->hasOne(parentProfile::class, 'id');
     }
 
     public function admin()
@@ -65,7 +61,7 @@ class User extends Authenticatable
 
     public function isParent()
     {
-        return $this->role === 'parentprofile';
+        return $this->role === 'parent';
     }
 
     public function isAdmin()

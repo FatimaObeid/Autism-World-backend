@@ -14,20 +14,14 @@
 </nav>
 <form action="{{ route('child.store') }}" method="POST">
     @csrf
-    <label for="childFirstName"> Child's FirstName:</label>
-    <input type="text" id="childFirstName" name="childFirstName" placeholder="Child's First Name">
+    <label for="first_name"> Child's FirstName:</label>
+    <input type="text" id="first_name" name="first_name" placeholder="Child's First Name">
     <br><br>
-    <label for="childLastName">Children LastName:</label>
-    <input type="text" id="childLastName" name="childLastName" placeholder="Child's LastName">
+    <label for="last_name">Children LastName:</label>
+    <input type="text" id="last_name" name="last_name" placeholder="Child's LastName">
     <br><br>
     <label for="dob">Date Of Birth:</label>
     <input type="date" id="dob" name="dob">
-    <br><br>
-    <label for="FatherName">Father Name:</label>
-    <input type="text" id="FatherName" name="FatherName" placeholder="Father's Name">
-    <br><br>
-    <label for="MotherName">Mother Name:</label>
-    <input type="text" id="MotherName" name="MotherName" placeholder="Mother's Name">
     <br><br>
     <label for="gender">Child's Gender</label>
     <select name="gender" id="gender">
@@ -36,8 +30,8 @@
         <option value="female">Female</option>
     </select>
     <br><br>
-    <label for="autism-level">Autism Level</label>
-    <select name="autism-level" id="autism-level">
+    <label for="autism_type">Autism Level</label>
+    <select name="autism_type" id="autism_type">
         <option value="" disabled> Select Level</option>
         <option value="mild"> Mild</option>
         <option value="moderate"> Moderate</option>
@@ -65,17 +59,7 @@
         <br> <br>
         <textarea name="Box" id="Box" placeholder="Describe the medical condition"></textarea>
     </div>
-    =======
-    <label>
-        <input type="radio" name="hasOtherDisease" value="no" onclick="showDescriptionBox(false)">
-        No
-    </label>
-    <br><br>
-    <div id="descriptionBox" style="display: none;">
-        <label for="descriptionBox"> Please Describe the case of your child: </label>
-        <br> <br>
-        <textarea name="Box" id="Box" placeholder="Describe the medical condition"></textarea>
-    </div>
+
     <button type="submit">Submit</button>
 
 </form>

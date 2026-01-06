@@ -16,7 +16,7 @@ class ParentProfileController extends Controller
         $parentprofile = $user->parentprofile;
         $specialists = Specialist::with('user')->get();
         $appointments = Appointment::with(['specialist.user'])
-            ->where('parentprofile_id', $parentprofile->id)
+            ->where('parent_id', $parentprofile->id)
             ->orderBy('appointment_time', 'asc')
             ->get();
 
@@ -36,37 +36,51 @@ class ParentProfileController extends Controller
         $validated = $request->validate([
             'specialist_id' => 'required|exists:specialists,id',
             'appointment_time' => 'required|date|after:now',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+        ]);
+        $parentprofile->update([
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
         ]);
 
         Appointment::create([
-            'parentprofile_id' => $parentprofile->id,
+            'parent_id' => $parentprofile->id,
             'specialist_id' => $validated['specialist_id'],
-            'aappointment_time' => $validated['appointment_time'],
+            'appointment_time' => $validated['appointment_time'],
             'status' => 'pending',
+
         ]);
 
         return redirect()
-            ->route('parent.dashboard')
+            ->route('parentprofile.dashboard')
             ->with('success', 'Appointment booked successfully and is pending approval.');
     }
 
     public function updateAppointment(Request $request, $id)
     {
         $user = Auth::user();
-        $parentprofile = $user->parentprofile;
+        $parentProfile = $user->parentProfile;
         $appointment = Appointment::where('id', $id)
-            ->where('parentprofile_id', $parentprofile->id)
+            ->where('parent_id', $parentProfile->id)
             ->firstOrFail();
 
         $validated = $request->validate([
-            'specialist_id' => 'required|exists:specialist_id',
+            'specialist_id' => 'required|exists:specialists,id',
             'appointment_time' => 'required|date|after:now',
+            'phone' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+        ]);
+        $parentProfile->update([
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
         ]);
 
         $appointment->update([
             'specialist_id' => $validated['specialist_id'],
             'appointment_time' => $validated['appointment_time'],
             'status' => 'pending',
+
         ]);
         return redirect()
             ->route('parentprofile.dashboard')
@@ -76,9 +90,9 @@ class ParentProfileController extends Controller
     public function deleteAppointment($id)
     {
         $user = Auth::user();
-        $parentprofile = $user->parentprofile;
+        $parentProfile = $user->parentProfile;
         $appointment = Appointment::where('id', $id)
-            ->where('parentprofile_id', $parentprofile->id)
+            ->where('parent_id', $parentProfile->id)
             ->firstOrFail();
 
         $appointment->delete();

@@ -1,0 +1,54 @@
+@extends('layouts.app')
+@section('content')
+<header>
+    <section id="about">
+        <h2 align="center">What is autism?</h2>
+        <br>
+        <p align="center">Autism Spectrum Disorder (ASD) is a lifelong developmental condition marked by differences in
+            social
+            communication, interaction, and repetitive behaviors, plus intense interests or sensory sensitivities, all
+            existing on a "spectrum" meaning it looks different in everyone, from mild to severe challenges. It's a
+            neurodevelopmental difference, meaning the brain processes things differently,
+            affecting how people connect, learn, and experience the world, with traits appearing in early childhood.
+        </p>
+    </section>
+
+    <section id="about">
+        <h2 align="center">We know that there is not one type of autism, but many.</h2>
+        <br>
+        <p align="center">Autism looks different for everyone, and each person with autism has a distinct set of
+            strengths and challenges. Some autistic people can speak, while others are nonverbal or minimally verbal and
+            communicate in other ways. Some have intellectual disabilities,
+            while some do not. Some require significant support in their daily lives, while others need less support
+            and, in some cases, live entirely independently.</p>
+    </section>
+
+    <section id="about">
+        <h2 align="center">Signs of Autism</h2>
+        <br>
+        <p>One of the most important things you can do as a parent or caregiver is to learn the early signs of autism
+            and become familiar with the developmental milestones that your child should be reaching.
+            The list below gives some examples of common types of behaviors you might see in children diagnosed with
+            autism spectrum disorder (ASD).
+            Not all autistic children will have all these behaviors, but most will have several of the behaviors listed
+            below. That’s why professional evaluation is crucial. Additionally,
+            some children without ASD might display some of these behaviors. But for those with ASD, these behaviors can
+            be disruptive or challenging to daily life. </p>
+    </section>
+
+    <section>
+        <label for="ageSelect"><strong>Select Child Age:</strong></label>
+
+        <select id="ageSelect" onchange="showSymptoms()">
+            <option value="" disabled selected>Choose your child's Age</option>
+            <option value="1">Babies By 6 Months</option>
+            <option value="2">By 9 months</option>
+            <option value="3">Toddlers By 12 months</option>
+            <option value="4">By 16 months</option>
+            <option value="5">By 24 months</option>
+            <option value="6">Signs of autism at any age</option>
+        </select>
+        <div id="symptomsBox" class="symptoms-box"></div>
+    </section>
+</header>
+@endsection

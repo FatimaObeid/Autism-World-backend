@@ -14,6 +14,7 @@ use App\Http\Controllers\HomeController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::post('/volunteer', [HomeController::class, 'storeVolunteer'])->name('volunteer.store');
 Route::get('/login', [AuthenticatedSessionController::class, 'showloginform'])->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'login'])->name('login.submit');
 Route::get('/register', [RegisteredUserController::class, 'showRegisterForm'])->name('register');
@@ -39,20 +40,19 @@ Route::middleware(['auth', 'role:specialist'])->prefix('specialist')->group(func
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::post('/appointments', [AdminController::class, 'saveSpecialist'])->name('admin.specialists.save');
-    Route::put('/appointments/{id}', [AdminController::class, 'updateSpecialist'])->name('admin.specialists.update');
-    Route::delete('/appointments/{id}', [AdminController::class, 'deleteSpecialist'])->name('admin.specialists.delete');
+    Route::post('/specialists', [AdminController::class, 'saveSpecialist'])->name('admin.specialists.save');
+    Route::put('/specialists/{id}', [AdminController::class, 'updateSpecialist'])->name('admin.specialists.update');
+    Route::delete('/specialists/{id}', [AdminController::class, 'deleteSpecialist'])->name('admin.specialists.delete');
 
 
 
-    Route::post('/appointments', [AdminController::class, 'saveParent'])->name('admin.parents.save');
-    Route::put('/appointments/{id}', [AdminController::class, 'updateParent'])->name('admin.parents.update');
-    Route::delete('/appointments/{id}', [AdminController::class, 'deleteParent'])->name('admin.parents.delete');
+    Route::post('/parents', [AdminController::class, 'saveParent'])->name('admin.parents.save');
+    Route::put('/parents/{id}', [AdminController::class, 'updateParent'])->name('admin.parents.update');
+    Route::delete('/parents/{id}', [AdminController::class, 'deleteParent'])->name('admin.parents.delete');
 });
 
 Route::middleware(['auth', 'role:parent'])->prefix('child')->group(function () {
     Route::get('/dashboard', [ChildController::class, 'dashboard'])->name('child.dashboard');
     Route::post('/create', [ChildController::class, 'storeChild'])->name('child.store');
 });
-
-require __DIR__ . '/auth.php';
+Route::view('/autism', 'autism.dashboard')->name('autism.dashboard');

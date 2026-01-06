@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\App;
 use App\Models\Appointment;
 use App\Models\Specialist;
 use Illuminate\Support\Facades\Auth;
-use App\Models\VolunteeringOpportunity;
+
 
 class SpecialistController extends Controller
 {
@@ -16,7 +16,12 @@ class SpecialistController extends Controller
     {
         $user = Auth::user();
         $specialist = $user->specialist;
-        $volunteeringOpportunities = VolunteeringOpportunity::get();
+
+        if (!$specialist) {
+            abort(403, 'Specialist profile not found.');
+        }
+
+
         $appointments = Appointment::with(['parentprofile.user'])
             ->where('specialist_id', $specialist->id)
             ->orderBy('appointment_time', 'asc')
@@ -25,8 +30,7 @@ class SpecialistController extends Controller
         return view('specialist.dashboard', [
             'user' => $user,
             'specialist' => $specialist,
-            'appointments' => $appointments,
-            'volunteeringOpportunities' => $volunteeringOpportunities
+            'appointments' => $appointments
         ]);
     }
 
@@ -35,6 +39,9 @@ class SpecialistController extends Controller
         $user = Auth::user();
         $specialist = $user->specialist;
 
+        if (!$specialist) {
+            abort(403, 'Specialist profile not found.');
+        }
 
         $appointment = Appointment::where('id', $id)
             ->where('specialist_id', $specialist->id)
@@ -51,6 +58,10 @@ class SpecialistController extends Controller
     {
         $user = Auth::user();
         $specialist = $user->specialist;
+
+        if (!$specialist) {
+            abort(403, 'Specialist profile not found.');
+        }
 
         $appointment = Appointment::where('id', $id)
             ->where('specialist_id', $specialist->id)

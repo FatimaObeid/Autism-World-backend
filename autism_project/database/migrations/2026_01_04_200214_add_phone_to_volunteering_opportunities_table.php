@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admins', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
-            $table->timestamps();
-            $table->string('department')->nullable();
-            $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
+        Schema::table('volunteering_opportunities', function (Blueprint $table) {
+            $table->string('phone')->nullable();
         });
     }
 
@@ -24,6 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admins');
+        Schema::table('volunteering_opportunities', function (Blueprint $table) {});
     }
 };

@@ -37,12 +37,12 @@ class ChildController extends Controller
             'autism_type' => 'nullable|string|max:255',
         ]);
         Child::create([
-            'parent_profile_id'  => $parentProfile->id,
+            'parent_id'          => $parentProfile->id,
             'first_name'         => $validated['first_name'],
             'last_name'          => $validated['last_name'],
             'dob'                => $validated['dob'],
             'gender'             => $validated['gender'],
-            'autism_type'        => $validated['autism_type'],
+            'autism_type'        => $validated['autism_type'] ?? null,
         ]);
         return redirect()
             ->route('parentprofile.dashboard')

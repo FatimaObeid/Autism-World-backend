@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('childs', function (Blueprint $table) {
+        Schema::create('children', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unsignedBigInteger('parent_profile_id');
+            $table->unsignedBigInteger('parent_id');
             $table->string('first_name');
             $table->string('last_name');
             $table->date('dob')->nullable();
             $table->string('gender')->default('male');
             $table->string('autism_type')->nullable();
-            $table->foreign('parent_profile_id')->references('id')->on('parents')->onDelete('cascade');
-
+            $table->string('description')->nullable();
+            $table->string('has_other_disease')->default('no');
+            $table->string('medical_condition')->nullable();
+            $table->foreign('parent_id')->references('id')->on('parent_profiles')->onDelete('cascade');
         });
     }
 
@@ -30,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('childs');
+        Schema::dropIfExists('children');
     }
 };

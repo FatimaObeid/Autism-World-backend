@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class VolunteeringOpportunity extends Model
 {
 
-    protected $fillable = ['activity', 'date', 'location'];
+    protected $fillable = ['activity', 'name', 'location', 'phone'];
 }

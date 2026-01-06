@@ -15,8 +15,7 @@
             <li><a href="{{route('home')}}">Home</a></li>
             <li> <a href="#appointments">View Appointments</a></li>
             <li><a href="#manage-app">Manage Appointments</a></li>
-            <li><a href="#availability">Specialist Availability</a></li>
-            <li><a href="#volunteering">Volunteer</a></li>
+
             <li>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -55,6 +54,7 @@
             @foreach($appointments as $appointment)
             <tr>
                 <td>{{$appointment->parentprofile->user->name}}</td>
+                <td>{{$appointment->specialist->user->name}}</td>
                 <td>{{$appointment->appointment_time}}</td>
                 <td>{{ucfirst($appointment->status)}}</td>
                 <td>
@@ -75,25 +75,6 @@
             @endforeach
         </table>
     </section>
-    <section id="volunteering">
-        <h2>volunteering Opprtunities</h2>
-        <table>
-            <tr>
-                <th>Activity</th>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Action</th>
-            </tr>
-            @foreach($volunteeringOpportunities as $opportunity)
-            <tr>
 
-                <td>{{$opportunity->activity}}</td>
-                <td>{{$opportunity->date}}</td>
-                <td>{{$opportunity->location}}</td>
-                <td><button onclick="volunteer('{{$opportunity->id}}')">Join</button></td>
-            </tr>
-            @endforeach
-        </table>
-    </section>
 </header>
 @endsection

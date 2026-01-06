@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('volunteering_opportunities', function (Blueprint $table) {
             $table->id();
             $table->string('activity');
-            $table->date('date');
+            $table->string('name');
             $table->string('location');
             $table->timestamps();
         });

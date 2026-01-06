@@ -31,11 +31,10 @@ class RegisteredUserController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:parentprofile,specialist',
+            'role' => 'required|in:parent,specialist',
 
-            'dob' => 'nullable|date',
-            'phonenumber'    => 'nullable|string|max:255',
-            'address'        => 'nullable|string|max:255',
+            'dob'            => 'nullable|date',
+            'phone'          => 'nullable|string|max:255',
             'specialization' => 'nullable|string|max:255',
             'license'        => 'nullable|string|max:255',
 
@@ -50,12 +49,11 @@ class RegisteredUserController extends Controller
 
         ]);
 
-        if ($validated['role'] === 'parentprofile') {
+        if ($validated['role'] === 'parent') {
             ParentProfile::create([
                 'id' => $user->id,
                 'dob' => $validated['dob'] ?? null,
-                'phonenumber' => $validated['phonenumber'] ?? null,
-                'address' => $validated['address'] ?? null,
+                'phone' => $validated['phone'] ?? null,
 
             ]);
         } else if ($validated['role'] === 'specialist') {

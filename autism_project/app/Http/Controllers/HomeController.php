@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\VolunteeringOpportunity;
 
 class HomeController extends Controller
 {
@@ -22,10 +23,34 @@ class HomeController extends Controller
             }
 
             if ($user->isParent()) {
-                return redirect()->route('parent.dashboard');
+                return redirect()->route('parentprofile.dashboard');
             }
         }
+        $volunteeringOpportunities = VolunteeringOpportunity::get();
 
-        return view('home.index');
+        return view('home.index', compact('volunteeringOpportunities'));
+    }
+    public function storeVolunteer(Request $request)
+    {
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'activity' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
+            'phone'    => 'nullable|string|max:20',
+
+        ]);
+
+
+        VolunteeringOpportunity::create([
+            'name'     => $validated['name'],
+            'activity' => $validated['activity'],
+            'location' => $validated['location'],
+            'phone'    => $validated['phone'] ?? null,
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Thank you for volunteering!');
     }
 }

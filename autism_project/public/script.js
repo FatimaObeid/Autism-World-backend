@@ -11,7 +11,6 @@ function ValidateRegisterform() {
         alert('Password must be at least 6 characters');
         return false;
     }
-    alert(`Registration successful!\nName:${name}\nEmail:${email}\nRole:${role}`);
     return true;
 }
 function showDescriptionBox(show) {
@@ -34,43 +33,6 @@ function showBookConfirmation() {
     }
 }
 
-const specialists = {
-    psychologist_karam: {
-        name: 'Psy. Karam',
-        specialization: 'Psychologist',
-        bio: 'Licensed Clinical Psychologist specializing in child development and Autism Spectrum Disorder (ASD).'
-    },
-    spl_maya: {
-        name: 'SPL Maya Haddad',
-        specialization: 'Speech Therapist',
-        bio: 'Certified speech-language therapist with experience supporting children with autism.'
-    }
-};
-
-window.onload = function () {
-    const specialistSelect = document.getElementById('specialist');
-
-    if (specialistSelect) {
-        const specialistInfo = document.createElement('div');
-        specialistInfo.id = 'specialist-info';
-        specialistSelect.insertAdjacentElement("afterend", specialistInfo);
-    }
-};
-
-function showSpecialistInfo(selectedSpecialist) {
-    const specialistInfo = document.getElementById('specialist-info');
-
-    if (selectedSpecialist && specialists[selectedSpecialist]) {
-        const doc = specialists[selectedSpecialist];
-        specialistInfo.innerHTML = `
-            <h3>${doc.name}</h3>
-            <p><strong>Specialization:</strong> ${doc.specialization}</p>
-            <p>${doc.bio}</p>
-        `;
-    } else if (specialistInfo) {
-        specialistInfo.innerHTML = '';
-    }
-}
 
 function confirmDelete() {
     return confirm("Are you sure you want to delete this appointment?");
@@ -196,11 +158,13 @@ function closeUpdateModal() {
     document.getElementById("update-modal").style.display = "none";
 }
 
-function openUpdateModal(appointmentId, doctor, date) {
+function openUpdateModal(appointmentId, specialist, date) {
     document.getElementById("update-modal").style.display = "block";
     document.getElementById("appointment_id_update").value = appointmentId;
-    document.getElementById("doctor_update").value = doctor;
+    document.getElementById("specialist_update").value = specialist;
     document.getElementById("date_update").value = date;
+    document.getElementById('update-form').action =
+        '/parent/appointments/' + appointmentId;
 }
 function closeAllModals() {
     closeAddParentModal();
@@ -245,4 +209,35 @@ function showApproveMessage() {
 }
 function volunteer() {
     alert('Thank you for volunteering!We will contact you soon');
-}      
+}
+
+
+
+
+
+
+
+function updateRoleFields(selectElements) {
+    let roleSpecificFields = document.getElementById('role-specific-fields');
+    if (!roleSpecificFields) {
+        roleSpecificFields = document.createElement('div');
+        roleSpecificFields.id = 'role-specific-fields';
+        selectElements.insertAdjacentElement('afterend', roleSpecificFields);
+    }
+
+    roleSpecificFields.innerHTML = "";
+    if (selectElements.value === 'specialist') {
+        roleSpecificFields.innerHTML = `
+        <label for="specialization">Specialization:</label>
+        <input type="text" id="specialization" name="specialization" required>
+        <label for="license">Medical License:</label>
+        <input type="text" id="license" name="license" required>
+        `;
+    }
+    else if (selectElements.value === 'parent') {
+        roleSpecificFields.innerHTML = `
+        <label for="dob"> Date Of Birth :</label>
+        <input type="date" id="dob" name="dob" required>
+        `;
+    }
+}

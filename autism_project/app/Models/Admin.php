@@ -10,11 +10,12 @@ use App\Models\User;
 class Admin extends Model
 {
     use HasFactory;
-    
-    protected $fillable=['id','department'];
-    public $incrementing=false;
-    protected $primaryKey='id';
-    public function user(){
-        return $this->belongsTo(User::class,'id');
+
+    protected $fillable = ['id', 'department'];
+    public $incrementing = false;
+    protected $primaryKey = 'id';
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id' /*this is the owner key*/, 'id' /*this is the foreign key*/);
     }
 }

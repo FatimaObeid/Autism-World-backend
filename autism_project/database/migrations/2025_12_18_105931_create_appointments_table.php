@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('specialist_id');
             $table->dateTime('appointment_time');
             $table->string('status')->default('pending');
-            $table->foreign('parent_id')->references('id')->on('parents')->onDelete('cascade');
+            $table->foreign('parent_id')->references('id')->on('parent_profiles')->onDelete('cascade');
             $table->foreign('specialist_id')->references('id')->on('specialists')->onDelete('cascade');
         });
     }

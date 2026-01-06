@@ -17,8 +17,8 @@ return new class extends Migration
             $table->date('dob')->nullable();
             $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
             $table->string('gender')->default('male');
-            $table->string('address');
-            $table->string('phone');
+            $table->string('address')->nullable();
+            $table->string('phone')->nullable();
         });
     }
 
