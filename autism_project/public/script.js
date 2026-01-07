@@ -158,13 +158,13 @@ function closeUpdateModal() {
     document.getElementById("update-modal").style.display = "none";
 }
 
-function openUpdateModal(appointmentId, specialist, date) {
+function openUpdateModal(id, specialist, date) {
     document.getElementById("update-modal").style.display = "block";
-    document.getElementById("appointment_id_update").value = appointmentId;
+
     document.getElementById("specialist_update").value = specialist;
     document.getElementById("date_update").value = date;
     document.getElementById('update-form').action =
-        '/parent/appointments/' + appointmentId;
+        '/parent/appointments/' + id;
 }
 function closeAllModals() {
     closeAddParentModal();

@@ -23,7 +23,7 @@ class SpecialistController extends Controller
 
 
         $appointments = Appointment::with(['parentprofile.user'])
-            ->where('specialist_id', $specialist->id)
+            ->where('specialist_id', $specialist->id) //specialist only sees their appointments
             ->orderBy('appointment_time', 'asc')
             ->get();
 

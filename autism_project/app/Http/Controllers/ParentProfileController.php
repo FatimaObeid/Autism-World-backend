@@ -15,7 +15,7 @@ class ParentProfileController extends Controller
         $user = Auth::user();
         $parentprofile = $user->parentprofile;
         $specialists = Specialist::with('user')->get();
-        $appointments = Appointment::with(['specialist.user'])
+        $appointments = Appointment::with(['specialist.user']) //give me the specialist related to this appointment and the user related to this specialst
             ->where('parent_id', $parentprofile->id)
             ->orderBy('appointment_time', 'asc')
             ->get();
@@ -34,10 +34,10 @@ class ParentProfileController extends Controller
         $parentprofile = $user->parentprofile;
 
         $validated = $request->validate([
-            'specialist_id' => 'required|exists:specialists,id',
+            'specialist_id'    => 'required|exists:specialists,id',
             'appointment_time' => 'required|date|after:now',
-            'phone' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+            'phone'            => 'required|string|max:255',
+            'address'          => 'required|string|max:255',
         ]);
         $parentprofile->update([
             'phone' => $validated['phone'],
@@ -45,10 +45,10 @@ class ParentProfileController extends Controller
         ]);
 
         Appointment::create([
-            'parent_id' => $parentprofile->id,
-            'specialist_id' => $validated['specialist_id'],
+            'parent_id'        => $parentprofile->id,
+            'specialist_id'    => $validated['specialist_id'],
             'appointment_time' => $validated['appointment_time'],
-            'status' => 'pending',
+            'status'           => 'pending',
 
         ]);
 
@@ -66,15 +66,11 @@ class ParentProfileController extends Controller
             ->firstOrFail();
 
         $validated = $request->validate([
-            'specialist_id' => 'required|exists:specialists,id',
+            'specialist_id'    => 'required|exists:specialists,id',
             'appointment_time' => 'required|date|after:now',
-            'phone' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
+
         ]);
-        $parentProfile->update([
-            'phone' => $validated['phone'],
-            'address' => $validated['address'],
-        ]);
+
 
         $appointment->update([
             'specialist_id' => $validated['specialist_id'],

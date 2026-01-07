@@ -29,7 +29,7 @@ class Specialist extends Model
 
     public function parents()
     {
-        return $this->belongsToMany(ParentProfile::class, 'appointments', 'specialist_id', 'parent_profile_id')
+        return $this->belongsToMany(ParentProfile::class, 'appointments', 'specialist_id', 'parent_id')
             ->withPivot('appointment_time', 'status')->withTimestamps();
     }
 }

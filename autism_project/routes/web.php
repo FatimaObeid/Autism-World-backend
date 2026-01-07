@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -23,13 +23,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'logout'])->name('logout');
 });
 
-
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
     Route::get('/dashboard', [ParentProfileController::class, 'dashboard'])->name('parentprofile.dashboard');
     Route::post('/appointments', [ParentProfileController::class, 'storeAppointment'])->name('parentprofile.appointments.store');
     Route::put('/appointments/{id}', [ParentProfileController::class, 'updateAppointment'])->name('parentprofile.appointments.update');
     Route::delete('/appointments/{id}', [ParentProfileController::class, 'deleteAppointment'])->name('parentprofile.appointments.delete');
 });
+
 
 
 Route::middleware(['auth', 'role:specialist'])->prefix('specialist')->group(function () {

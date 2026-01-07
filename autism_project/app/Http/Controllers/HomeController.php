@@ -26,9 +26,8 @@ class HomeController extends Controller
                 return redirect()->route('parentprofile.dashboard');
             }
         }
-        $volunteeringOpportunities = VolunteeringOpportunity::get();
 
-        return view('home.index', compact('volunteeringOpportunities'));
+        return view('home.index');
     }
     public function storeVolunteer(Request $request)
     {

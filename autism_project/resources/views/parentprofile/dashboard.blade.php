@@ -56,7 +56,7 @@
         </tr>
         @foreach ($appointments as $appointment)
         <tr>
-            <td>{{ $appointment->specialist->user->name ?? 'Specialist deleted' }}</td>
+            <td>{{ $appointment->specialist->user->name ?? 'Specialist is not available ' }}</td>
             <td>{{ $appointment->appointment_time }}</td>
             <td>{{ ucfirst($appointment->status) }}</td>
             <td>
@@ -90,12 +90,13 @@
     <form method="POST" id="update-form" data-base-url="/parent/appointments/">
         @csrf
         @method('PUT')
-        <label>Appointment ID:</label>
-        <input type="hidden" id="appointment_id_update">
+
         <label>Choose a New Specialist:</label>
         <select name="specialist_id" id="specialist_update">
             @foreach ($specialists as $specialist)
-            <option value="{{ $specialist->id }}"> {{ $specialist->user->name }} </option>
+            <option value="{{ $specialist->id }}"> {{ $specialist->user->name }}
+                {{ $specialist->specialization }}
+            </option>
             @endforeach
         </select>
 
