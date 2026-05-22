@@ -1,0 +1,291 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Http\Controllers\Controller;
+use App\Models\Appointment;
+use App\Models\Child;
+use App\Models\CommunityEvent;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class SpecialistController extends Controller
+{
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $specialist = $user->specialist;
+        if (!$specialist) {
+            return response()->json(['error' => 'Specialist profile not found.'], 404);
+        }
+        $specialistName = $specialist->user->name;
+        $specialization = $specialist->specialization;
+        $todayAppointments = $specialist->appointments()
+            ->whereDate('appointment_time', today())
+            ->count();
+
+        $upcomingAppointments = $specialist->appointments()
+            ->where('appointment_time', '>', now())
+            ->orderBy('appointment_time', 'asc')
+            ->get();
+        $nextAppointment = $upcomingAppointments->first();
+        $nextAppointmentData = null;
+        if ($nextAppointment) {
+            $nextAppointmentData = [
+                'time' => $nextAppointment->appointment_time->format('h:i A'),
+                'starts_in' => $this->getTimeUntil($nextAppointment->appointment_time),
+                'type' => $nextAppointment->type,
+                'child_name' => $nextAppointment->child->name,
+
+            ];
+        }
+
+
+        return response()->json([
+            'specialist_name' => $specialistName,
+            'specialization' => $specialization,
+            'next_appointment' => $nextAppointmentData,
+            'today_appointments' => $todayAppointments
+        ]);
+    }
+
+    private function getTimeUntil($appointmentTime)
+    {
+        $diffInMinutes = now()->diffInMinutes($appointmentTime, false);
+
+        if ($diffInMinutes <= 0) {
+            return "Now";
+        } elseif ($diffInMinutes < 60) {
+            return "Starts in {$diffInMinutes} mins";
+        } else {
+            $hours = floor($diffInMinutes / 60);
+            $minutes = $diffInMinutes % 60;
+            if ($minutes > 0) {
+                return "Starts in {$hours}h {$minutes}m";
+            }
+            return "Starts in {$hours} hours";
+        }
+    }
+    public function confirmAppointment($id)
+    {
+        $user = Auth::user();
+        $specialist = $user->specialist;
+
+        if (!$specialist) {
+            return response()->json(['error' => 'Specialist profile not found.'], 403);
+        }
+
+        $appointment = Appointment::where('id', $id)
+            ->where('specialist_id', $specialist->id)
+            ->firstOrFail();
+
+        $appointment->update(['status' => 'approved']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment approved successfully.',
+            'appointment' => $appointment
+        ]);
+    }
+    public function declineAppointment($id, Request $request)
+    {
+        $user = Auth::user();
+        $specialist = $user->specialist;
+
+        if (!$specialist) {
+            return response()->json(['error' => 'Specialist profile not found.'], 403);
+        }
+
+        $appointment = Appointment::where('id', $id)
+            ->where('specialist_id', $specialist->id)
+            ->firstOrFail();
+
+        $appointment->update([
+            'status' => 'declined'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment declined successfully.',
+            'appointment' => $appointment
+        ]);
+    }
+    /**
+     * Get all upcoming appointments for the specialist
+     */
+    public function upcomingAppointments()
+    {
+        $user = Auth::user();
+        $specialist = $user->specialist;
+
+        if (!$specialist) {
+            return response()->json(['error' => 'Specialist profile not found.'], 404);
+        }
+
+        // Get all future appointments, ordered by date and time
+        $upcomingAppointments = $specialist->appointments()
+            ->where('appointment_time', '>', now())
+            ->with('child')
+            ->orderBy('appointment_time', 'asc')
+            ->get();
+
+
+        $formattedAppointments = $upcomingAppointments->map(function ($appointment) {
+            return [
+                'id' => $appointment->id,
+                'child_name' => $appointment->child->name ?? 'Unknown Child',
+                'date' => $appointment->appointment_time->format('D d M'), // "Mon 12 Feb"
+                'time' => $appointment->appointment_time->format('h:i A'), // "09:00 AM"
+                'session_type' => $appointment->appointment_type, // "Therapy", "Check-up", etc.
+                'status' => $appointment->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'upcoming_appointments' => $formattedAppointments,
+            'total_upcoming' => $upcomingAppointments->count()
+        ]);
+    }
+    public function getMyClients()
+    {
+        $user = Auth::user();
+        $specialist = $user->specialist;
+
+
+        $children = Child::where('specialist_id', $specialist->id)
+            ->with('parent.user')
+            ->get();
+
+        $formattedClients = $children->map(function ($child) {
+
+            $age = $child->dob ? now()->diffInYears($child->dob) . ' years' : 'N/A';
+
+            return [
+                'id' => $child->id,
+                'child_name' => $child->full_name,
+                'age' => $age,
+                'parent_name' => $child->parent->user->name ?? 'N/A',
+                'last_session_summary' => $child->last_session ?? 'No session notes yet',
+                'next_plan' => $child->next_plan ?? 'No plan set yet',
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'clients' => $formattedClients,
+
+        ]);
+    }
+    public function getClientDetails($childId)
+    {
+        $specialist = Auth::user()->specialist;
+
+
+        $child = Child::where('id', $childId)
+            ->where('specialist_id', $specialist->id)
+            ->with('parent.user')
+            ->firstOrFail();
+
+
+        $age = $child->dob ? now()->diffInYears($child->dob) . ' years' : 'N/A';
+
+        $clientDetails = [
+            'id' => $child->id,
+            'child_name' => $child->full_name,
+            'age' => $age,
+            'dob' => $child->dob ? $child->dob->format('Y-m-d') : null,
+            'gender' => $child->gender ?? 'Not specified',
+            'parent_name' => $child->parent->user->name ?? 'N/A',
+            'parent_email' => $child->parent->user->email ?? 'N/A',
+            'parent_phone' => $child->parent->user->phone ?? 'N/A',
+            'behavioral_description' => $child->description ?? 'No description provided',
+            'autism_level' => $child->autism_level ?? 'Not specified',
+            'has_severe_condition' => $child->has_other_disease ?? false,
+            'severe_condition_details' => $child->medical_condition ?? '',
+            'medical_details' => $child->medical_condition ?? 'No medical details',
+            'diagnosis' => $child->diagnosis ?? 'No diagnosis added',
+            'therapy_type' => $child->therapy_type ?? 'Not specified',
+            'session_frequency' => $child->session_frequency ?? 'Not set',
+            'last_session' => $child->last_session ?? 'No session notes yet',
+            'next_plan' => $child->next_plan ?? 'No plan set yet',
+            'goals' => $child->current_goals ?? 'No goals set',
+            'progress' => $child->recent_progress ?? 'No progress yet',
+            'important_notes' => $child->important_notes ?? 'No important notes',
+        ];
+
+        return response()->json([
+            'success' => true,
+            'client' => $clientDetails
+        ]);
+    }
+    public function updateSpecialistNotes(Request $request, $childId)
+    {
+        $specialist = Auth::user()->specialist;
+
+        $child = Child::where('id', $childId)
+            ->where('specialist_id', $specialist->id)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'diagnosis' => 'nullable|string',
+            'therapy_type' => 'nullable|string',
+            'session_frequency' => 'nullable|string',
+            'last_session_summary' => 'nullable|string',
+            'next_plan' => 'nullable|string',
+            'goals' => 'nullable|string',
+            'progress' => 'nullable|string',
+            'important_notes' => 'nullable|string',
+        ]);
+
+        $child->update([
+            'diagnosis' => $validated['diagnosis'] ?? $child->diagnosis,
+            'therapy_type' => $validated['therapy_type'] ?? $child->therapy_type,
+            'session_frequency' => $validated['session_frequency'] ?? $child->session_frequency,
+            'last_session' => $validated['last_session_summary'] ?? $child->last_session,
+            'next_plan' => $validated['next_plan'] ?? $child->next_plan,
+            'current_goals' => $validated['goals'] ?? $child->current_goals,
+            'recent_progress' => $validated['progress'] ?? $child->recent_progress,
+            'important_notes' => $validated['important_notes'] ?? $child->important_notes,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Specialist notes updated successfully.'
+        ]);
+    }
+    public function getUpcomingEvents()
+    {
+        $specialist = Auth::user()->specialist;
+
+        // Get all active events that are today or in the future
+        $events = CommunityEvent::where('status', 'active')
+            ->where('event_date', '>=', now()->startOfDay())
+            ->orderBy('event_date', 'asc')
+            ->orderBy('event_time', 'asc')
+            ->get();
+
+        $formattedEvents = $events->map(function ($event) use ($specialist) {
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'category' => $event->category,
+                'location' => $event->location,
+                'date' => $event->event_date->format('M d'),
+                'time' => $event->event_time ? $event->event_time->format('h:i A') : 'TBD',
+                'description' => $event->description,
+                'is_registered' => $event->isSpecialistRegistered($specialist->id),
+                'is_full' => $event->isFull(),
+                'available_spots' => $event->availableSpots(),
+                'max_participants' => $event->max_participants,
+                'current_participants' => $event->current_participants ?? 0,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'events' => $formattedEvents,
+            'total_events' => $events->count()
+        ]);
+    }
+}

@@ -11,9 +11,36 @@ class Child extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['parent_id', 'first_name', 'last_name', 'dob', 'gender', 'autism_type', 'description', 'has_other_disease', 'medical_condition'];
+    protected $fillable = [
+        'parent_id',
+        'full_name',
+        'dob',
+        'gender',
+        'autism_level',
+        'description',
+        'has_other_disease',
+        'medical_condition',
+        'diagnosis',
+        'therapy_type',
+        'session_frequency',
+        'last_session',
+        'next_plan',
+        'current_goals',
+        'recent_progress',
+        'important_notes',
+    ];
     public function parent()
     {
         return $this->belongsTo(ParentProfile::class, 'parent_id');
+    }
+    public function specialist()
+    {
+        return $this->belongsTo(User::class, 'specialist_id');
+    }
+
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
     }
 }

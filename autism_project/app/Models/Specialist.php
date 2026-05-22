@@ -32,4 +32,19 @@ class Specialist extends Model
         return $this->belongsToMany(ParentProfile::class, 'appointments', 'specialist_id', 'parent_id')
             ->withPivot('appointment_time', 'status')->withTimestamps();
     }
+
+    public function communityEvents()
+    {
+        return $this->belongsToMany(
+            CommunityEvent::class,
+            'community_event_specialist',
+            'specialist_id',
+            'community_event_id'
+        )->withTimestamps();
+    }
+    public function children()
+    {
+
+        return $this->hasMany(Child::class, 'specialist_id');
+    }
 }

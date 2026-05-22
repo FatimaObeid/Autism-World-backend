@@ -9,19 +9,31 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
-    public function handle(Request $request, Closure $next,$role)
+    public function handle(Request $request, Closure $next, $role)
     {
-        if(!Auth::check()){
+        if (!Auth::check()) {
+
+            // If request comes from API (Flutter)
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Unauthenticated'
+                ], 401);
+            }
+
             return redirect()->route('login');
         }
-        if(Auth::user()->role !==$role){
-            abort(403,"You Are not authorized to access this Page");
+
+        if (Auth::user()->role !== $role) {
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Forbidden'
+                ], 403);
+            }
+
+            abort(403, "You are not authorized to access this page");
         }
+
         return $next($request);
     }
 }

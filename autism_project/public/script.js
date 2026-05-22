@@ -166,40 +166,72 @@ function openUpdateModal(id, specialist, date) {
     document.getElementById('update-form').action =
         '/parent/appointments/' + id;
 }
+
 function closeAllModals() {
-    closeAddParentModal();
-    closeAddSpecialistModal();
-    closeUpdateParentModal();
-    closeUpdateSpecialistModal();
-}
-function openAddParentModal() {
-    closeAllModals();
-    document.getElementById('add-parent-modal').style.display = 'block';
-}
-function closeAddParentModal() {
     document.getElementById('add-parent-modal').style.display = 'none';
+    document.getElementById('add-specialist-modal').style.display = 'none';
+    document.getElementById('update-parent-modal').style.display = 'none';
+    document.getElementById('update-specialist-modal').style.display = 'none';
 }
+
+
+
 function openAddSpecialistModal() {
     closeAllModals();
     document.getElementById('add-specialist-modal').style.display = 'block';
 }
+
 function closeAddSpecialistModal() {
     document.getElementById('add-specialist-modal').style.display = 'none';
 }
-function openUpdateParentModal() {
-    closeAllModals();
-    document.getElementById('update-parent-modal').style.display = 'block';
-}
-function closeUpdateParentModal() {
-    document.getElementById('update-parent-modal').style.display = 'none';
-}
-function openUpdateSpecialistModal() {
-    closeAllModals();
-    document.getElementById('update-specialist-modal').style.display = 'block';
 
+function openUpdateSpecialistModal(id, name, email, specialization, license) {
+    closeAllModals();
+
+
+    document.getElementById('specialist-name-update').value = name;
+    document.getElementById('specialist-email-update').value = email;
+    document.getElementById('specialist-specialization-update').value = specialization;
+    document.getElementById('specialist-license-update').value = license;
+
+    let form = document.getElementById('update-specialist-form');
+    form.action = '/admin/specialists/' + id;
+
+    document.getElementById('update-specialist-modal').style.display = 'block';
 }
+
 function closeUpdateSpecialistModal() {
     document.getElementById('update-specialist-modal').style.display = 'none';
+}
+
+
+
+function openAddParentModal() {
+    closeAllModals();
+    document.getElementById('add-parent-modal').style.display = 'block';
+}
+
+function closeAddParentModal() {
+    document.getElementById('add-parent-modal').style.display = 'none';
+}
+
+function openUpdateParentModal(id, name, email, phone, address, dob) {
+    closeAllModals();
+
+    document.getElementById('parent-name-update').value = name;
+    document.getElementById('parent-email-update').value = email;
+    document.getElementById('parent-phone-update').value = phone;
+    document.getElementById('parent-address-update').value = address;
+    document.getElementById('parent-dob-update').value = dob;
+
+    let form = document.getElementById('update-parent-form');
+    form.action = '/admin/parents/' + id;
+
+    document.getElementById('update-parent-modal').style.display = 'block';
+}
+
+function closeUpdateParentModal() {
+    document.getElementById('update-parent-modal').style.display = 'none';
 }
 function showDeclineMessage() {
     alert('The appointment is declined')
@@ -208,7 +240,7 @@ function showApproveMessage() {
     alert('The appointment is approved')
 }
 function volunteer() {
-    alert('Thank you for volunteering!We will contact you soon');
+    alert('Thank you for volunteering!We will contact you soon')
 }
 
 

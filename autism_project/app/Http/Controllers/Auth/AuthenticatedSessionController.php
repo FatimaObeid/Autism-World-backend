@@ -22,19 +22,6 @@ class AuthenticatedSessionController extends Controller
             'email'    => 'required|email',
             'password' => 'required|string',
         ]);
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            $user = Auth::user();
-            if ($user->isAdmin()) {
-                return redirect()->route('admin.dashboard');
-            }
-            if ($user->isParent()) {
-                return redirect()->route('parentprofile.dashboard');
-            }
-            if ($user->isSpecialist()) {
-                return redirect()->route('specialist.dashboard');
-            }
-        }
         return back()->withErrors([
             'email' => 'Invalid credentials'
         ])->withInput();

@@ -36,13 +36,12 @@
                         '{{ $specialist->id }}',
                         '{{ $specialist->user->name }}',
                         '{{ $specialist->user->email }}',
-                        '{{ $specialist->specialization }}'
+                        '{{ $specialist->specialization }}',
+                        '{{ $specialist->license  }}',
                  )">
                     Edit
                 </button>
-                <form method="POST" action="{{ route('admin.specialists.delete',
-
-$specialist->id) }}" style="display:inline;">
+                <form method="POST" action="{{ route('admin.specialists.delete',$specialist->id) }}" style="display:inline;">
 
                     @csrf
                     @method('DELETE')
@@ -72,13 +71,14 @@ $specialist->id) }}" style="display:inline;">
                     onclick="openUpdateParentModal(
                         '{{ $parent->id }}',
                         '{{ $parent->user->name }}',
-                        '{{ $parent->user->email }}'
+                        '{{ $parent->user->email }}',
+                        '{{ $parent->phone }}',
+                        '{{ $parent->address }}',   
+                        '{{ $parent->dob }}'
                     )">
                     Edit
                 </button>
-                <form method="POST" action="{{ route('admin.parents.delete',
-
-$parent->id) }}" style="display:inline;">
+                <form method="POST" action="{{ route('admin.parents.delete',$parent->id) }}" style="display:inline;">
 
                     @csrf
                     @method('DELETE')
@@ -97,12 +97,19 @@ $parent->id) }}" style="display:inline;">
         @csrf
         <label>Full Name</label>
         <input type="text" name="name" required>
+
         <label>Email</label>
         <input type="email" name="email" required>
+
         <label>Password</label>
         <input type="password" name="password" required>
+
         <label>Specialization</label>
         <input type="text" name="specialization" required>
+
+        <label>License</label>
+        <input type="text" name="license">
+
         <button type="submit">Add specialist</button>
         <button type="button" onclick="closeAddSpecialistModal()">Close</button>
     </form>
@@ -115,12 +122,15 @@ $parent->id) }}" style="display:inline;">
         @method('PUT')
         <label>Full Name</label>
         <input type="text" name="name" id="specialist-name-update" required>
+
         <label>Email</label>
         <input type="email" name="email" id="specialist-email-update" required>
-        <label>Specialization</label>
 
-        <input type="text" name="specialization" id="specialist-specialization-
-update" required>
+        <label>Specialization</label>
+        <input type="text" name="specialization" id="specialist-specialization-update" required>
+
+        <label>License</label>
+        <input type="text" name="license" id="specialist-license-update">
 
         <button type="submit">Update</button>
         <button type="button" onclick="closeUpdateSpecialistModal()">Close</button>
@@ -133,12 +143,22 @@ update" required>
         @csrf
         <label>Full Name</label>
         <input type="text" name="name" required>
+
         <label>Email</label>
         <input type="email" name="email" required>
+
         <label>Password</label>
         <input type="password" name="password" required>
+
         <label for="phone">Phone Number</label>
         <input type="string" name="phone" id="phone" required>
+
+        <label for="address">Address</label>
+        <input type="text" name="address" id="address">
+
+        <label for="dob">Date of Birth</label>
+        <input type="date" name="dob" id="dob">
+
         <button type="submit">Add parent</button>
         <button type="button" onclick="closeAddParentModal()">Close</button>
     </form>
@@ -151,12 +171,22 @@ update" required>
         @method('PUT')
         <label>Full Name</label>
         <input type="text" name="name" id="parent-name-update" required>
+
         <label>Email</label>
         <input type="email" name="email" id="parent-email-update" required>
+
         <label>Password</label>
         <input type="password" name="password" required>
+
         <label for="phone">Phone Number</label>
-        <input type="string" name="phone" id="phone" required>
+        <input type="string" name="phone" id="parent-phone-update" required>
+
+        <label for="address">Address</label>
+        <input type="text" name="address" id="parent-address-update">
+
+        <label for="dob">Date of Birth</label>
+        <input type="date" name="dob" id="parent-dob-update">
+
         <button type="submit">Update</button>
         <button type="button" onclick="closeUpdateParentModal()">Close</button>
     </form>

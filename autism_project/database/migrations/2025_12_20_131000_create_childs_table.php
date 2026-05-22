@@ -15,15 +15,16 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->unsignedBigInteger('parent_id');
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('full_name');
             $table->date('dob')->nullable();
             $table->string('gender')->default('male');
-            $table->string('autism_type')->nullable();
+            $table->string('autism_level')->nullable();
             $table->string('description')->nullable();
             $table->string('has_other_disease')->default('no');
             $table->string('medical_condition')->nullable();
             $table->foreign('parent_id')->references('id')->on('parent_profiles')->onDelete('cascade');
+            $table->unsignedBigInteger('specialist_id');
+            $table->foreign('specialist_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

@@ -12,7 +12,7 @@ use App\Models\Specialist;
 class Appointment extends Model
 {
     use HasFactory;
-    protected $fillable = ['parent_id', 'specialist_id', 'appointment_id', 'status', 'appointment_time'];
+    protected $fillable = ['parent_id', 'specialist_id', 'appointment_id', 'status', 'appointment_time', 'appointment_type'];
 
     public function parentprofile()
     {
@@ -21,5 +21,9 @@ class Appointment extends Model
     public function specialist()
     {
         return $this->belongsTo(Specialist::class, 'specialist_id');
+    }
+    public function child()
+    {
+        return $this->belongsTo(Child::class, 'child_id');
     }
 }

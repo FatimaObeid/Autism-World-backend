@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Volunteer;
 use App\Models\VolunteeringOpportunity;
 
 class HomeController extends Controller
@@ -41,7 +42,7 @@ class HomeController extends Controller
         ]);
 
 
-        VolunteeringOpportunity::create([
+        Volunteer::create([
             'name'     => $validated['name'],
             'activity' => $validated['activity'],
             'location' => $validated['location'],

@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Specialist;
 use App\Models\ParentProfile;
 use App\Models\Admin;
+use Laravel\Sanctum\HasApiTokens;
 
 
 class User extends Authenticatable

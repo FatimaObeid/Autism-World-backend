@@ -17,9 +17,12 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id');
             $table->unsignedBigInteger('specialist_id');
             $table->dateTime('appointment_time');
+            $table->string('type')->default('Therapy_session');
             $table->string('status')->default('pending');
             $table->foreign('parent_id')->references('id')->on('parent_profiles')->onDelete('cascade');
             $table->foreign('specialist_id')->references('id')->on('specialists')->onDelete('cascade');
+            $table->unsignedBigInteger('child_id')->nullable();
+            $table->foreign('child_id')->references('id')->on('children')->onDelete('cascade');
         });
     }
 

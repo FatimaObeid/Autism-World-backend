@@ -65,7 +65,7 @@
 
     <div class="card">
         <h3> Add New Opportunity</h3>
-        <form action=" {{ route('volunteer.store') }}" method="POST">
+        <form action=" {{ route('volunteer.store') }}" method="POST" onsubmit="return volunteer()">
             @csrf
 
             <div>

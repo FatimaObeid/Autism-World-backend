@@ -51,7 +51,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name'           => 'required|string|max:255',
             'email'          => 'required|email|unique:users,email,'  . $user->id,
-            'password'       => 'required|string|min:6',
+            'password'       => 'nullable|string|min:6',
             'specialization' => 'required|string|max:255',
             'license'        => 'nullable|string|max:255',
         ]);
@@ -64,7 +64,7 @@ class AdminController extends Controller
         $user->save();
         $specialist->update([
             'specialization' => $validated['specialization'],
-            'license'        => $validated['license'],
+            'license'        => $validated['license'] ?? null,
         ]);
 
         return redirect()->route('admin.dashboard')->with('success', 'Specialist updated successfully');
@@ -120,7 +120,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'name'    => 'required|string|max:255',
             'email'   => 'required|email|unique:users,email,'  . $user->id,
-            'password' => 'required|string|min:6',
+            'password' => 'nullable|string|min:6',
             'dob'     => 'nullable|date',
             'phone'   => 'required|string|max:20',
             'address' => 'nullable|string|max:255',
@@ -134,9 +134,9 @@ class AdminController extends Controller
         }
         $user->save();
         $parentprofile->update([
-            'dob' => $validated['dob'],
+            'dob' => $validated['dob'] ?? null,
             'phone'        => $validated['phone'],
-            'address'        => $validated['address'],
+            'address'        => $validated['address'] ?? null,
 
         ]);
 

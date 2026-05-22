@@ -22,7 +22,6 @@ Route::post('/register', [RegisteredUserController::class, 'register'])->name('r
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'logout'])->name('logout');
 });
-
 Route::middleware(['auth', 'role:parent'])->prefix('parent')->group(function () {
     Route::get('/dashboard', [ParentProfileController::class, 'dashboard'])->name('parentprofile.dashboard');
     Route::post('/appointments', [ParentProfileController::class, 'storeAppointment'])->name('parentprofile.appointments.store');
