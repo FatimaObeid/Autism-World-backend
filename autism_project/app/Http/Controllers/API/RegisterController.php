@@ -42,10 +42,19 @@ class RegisterController extends Controller
 
             'volunteer_type' => $request->volunteer_type,
         ]);
-
+        if ($user->role === 'Specialist') {
+            \App\Models\Specialist::create([
+                'id' => $user->id, // Assign the foreign key/primary key relationship
+                'specialization' => $request->specialization ?? 'General',
+                'license' => $request->license_number ?? 'N/A' // Matches your $fillable in Specialist.php
+            ]);
+        }
+        $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
             'message' => 'Account created successfully',
-            'user' => $user
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer',
         ], 201);
     }
 }
