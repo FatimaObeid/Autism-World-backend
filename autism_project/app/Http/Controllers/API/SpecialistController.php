@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Child;
 use App\Models\CommunityEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class SpecialistController extends Controller
@@ -25,6 +26,7 @@ class SpecialistController extends Controller
             ->count();
 
         $upcomingAppointments = $specialist->appointments()
+            ->with('child')
             ->where('appointment_time', '>', now())
             ->orderBy('appointment_time', 'asc')
             ->get();
@@ -35,7 +37,7 @@ class SpecialistController extends Controller
                 'time' => $nextAppointment->appointment_time->format('h:i A'),
                 'starts_in' => $this->getTimeUntil($nextAppointment->appointment_time),
                 'type' => $nextAppointment->type,
-                'child_name' => $nextAppointment->child->name,
+                'child_name' => $nextAppointment->child->full_name,
 
             ];
         }
@@ -65,6 +67,42 @@ class SpecialistController extends Controller
             }
             return "Starts in {$hours} hours";
         }
+    }
+    public function getPendingRequests()
+    {
+        $specialist = Auth::user()->specialist;
+
+        $pending = Appointment::where('specialist_id', $specialist->id)
+            ->where('status', 'pending')
+            ->with('child.parent.user')
+            ->orderBy('appointment_time', 'asc')
+            ->get();
+
+        $formatted = $pending->map(function ($appt) {
+            $apptTime = Carbon::parse($appt->appointment_time);
+
+            // Determine human friendly label (Today, Tomorrow, or Specific Date)
+            if ($apptTime->isToday()) {
+                $dayLabel = 'Today';
+            } elseif ($apptTime->isTomorrow()) {
+                $dayLabel = 'Tomorrow';
+            } else {
+                $dayLabel = $apptTime->format('D, d M');
+            }
+
+            return [
+                'id' => $appt->id,
+                'parent_name' => $appt->child->parent->user->name ?? 'Unknown Parent',
+                'session_type' => $appt->appointment_type,
+                'day_label' => $dayLabel,
+                'time' => $apptTime->format('h:i A'),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'pending_requests' => $formatted
+        ]);
     }
     public function confirmAppointment($id)
     {
@@ -258,9 +296,7 @@ class SpecialistController extends Controller
     {
         $specialist = Auth::user()->specialist;
 
-        // Get all active events that are today or in the future
-        $events = CommunityEvent::where('status', 'active')
-            ->where('event_date', '>=', now()->startOfDay())
+        $events = CommunityEvent::where('event_date', '>=', now()->startOfDay())
             ->orderBy('event_date', 'asc')
             ->orderBy('event_time', 'asc')
             ->get();
@@ -275,10 +311,8 @@ class SpecialistController extends Controller
                 'time' => $event->event_time ? $event->event_time->format('h:i A') : 'TBD',
                 'description' => $event->description,
                 'is_registered' => $event->isSpecialistRegistered($specialist->id),
-                'is_full' => $event->isFull(),
-                'available_spots' => $event->availableSpots(),
-                'max_participants' => $event->max_participants,
-                'current_participants' => $event->current_participants ?? 0,
+
+
             ];
         });
 
@@ -286,6 +320,46 @@ class SpecialistController extends Controller
             'success' => true,
             'events' => $formattedEvents,
             'total_events' => $events->count()
+        ]);
+    }
+
+    public function registerForEvent($eventId)
+    {
+        $specialist = Auth::user()->specialist;
+        $event = CommunityEvent::findOrFail($eventId);
+        if ($event->isSpecialistRegistered($specialist->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are already registered for this event.'
+            ], 400);
+        }
+
+        // Register the specialist
+        $event->specialists()->attach($specialist->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully registered for the event.'
+        ]);
+    }
+    public function unregisterFromEvent($eventId)
+    {
+        $specialist = Auth::user()->specialist;
+
+        $event = CommunityEvent::where('id', $eventId)->firstOrFail();
+
+        if (!$event->isSpecialistRegistered($specialist->id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not registered for this event.'
+            ], 400);
+        }
+
+        $event->specialists()->detach($specialist->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully unregistered from the event.'
         ]);
     }
 }
