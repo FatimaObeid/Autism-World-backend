@@ -14,15 +14,16 @@ return new class extends Migration
         Schema::create('children', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unsignedBigInteger('parent_id');
+            $table->unsignedBigInteger('parent_profile_id');
             $table->string('full_name');
             $table->date('dob')->nullable();
+            $table->string('age')->nullable();
             $table->string('gender')->default('male');
             $table->string('autism_level')->nullable();
             $table->string('description')->nullable();
             $table->string('has_other_disease')->default('no');
             $table->string('medical_condition')->nullable();
-            $table->foreign('parent_id')->references('id')->on('parent_profiles')->onDelete('cascade');
+            $table->foreign('parent_profile_id')->references('id')->on('parent_profiles')->onDelete('cascade');
             $table->unsignedBigInteger('specialist_id');
             $table->foreign('specialist_id')->references('id')->on('users')->onDelete('cascade');
         });
