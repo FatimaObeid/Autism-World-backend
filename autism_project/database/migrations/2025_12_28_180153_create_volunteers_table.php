@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('volunteer', function (Blueprint $table) {
-            $table->id()->primary();
-            $table->string('activity');
-            $table->string('name');
-            $table->string('location');
+        Schema::create('volunteers', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->primary();
+            $table->string('activity')->nullable();
+            $table->string('phone')->nullable();
             $table->timestamps();
             $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('volunteer');
+        Schema::dropIfExists('volunteers');
     }
 };
