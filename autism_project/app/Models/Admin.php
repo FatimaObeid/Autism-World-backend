@@ -11,7 +11,7 @@ class Admin extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['id', 'department'];
+    protected $fillable = ['id,];
     public $incrementing = false;
     protected $primaryKey = 'id';
     public function user()
