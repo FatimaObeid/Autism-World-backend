@@ -1,23 +1,22 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
-
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\Volunteer;
 
 class VolunteerController extends Controller
 {
     public function dashboard()
     {
         $user = Auth::user();
-        $volunteer = $user->volunteer;
-        $volunteer = $user->$volunteer()->with('workshops')->first();
+        $volunteer = Volunteer::where('id', $user->id)->with('workshops')->first();
 
         if (!$volunteer) {
-            abort(403, 'Volunteer profile not found.');
+            return response()->json(['message' => 'Volunteer profile not found.'], 403);
         }
-
 
         return response()->json([
             'dashboard_summary' => [
@@ -25,25 +24,34 @@ class VolunteerController extends Controller
                 'approved_count'    => $volunteer->workshops->where('status', 'approved')->count(),
                 'pending_count'     => $volunteer->workshops->where('status', 'pending')->count(),
             ],
-            'profile'   => $volunteer,
+            'profile'   => [
+                'id'       => $volunteer->id,
+                'name'     => $volunteer->user ? $volunteer->user->name : 'Volunteer',
+                'activity' => $volunteer->activity,
+                'phone'    => $volunteer->phone ?? 'Not specified',
+            ],
             'workshops' => $volunteer->workshops
         ], 200);
     }
-    public function addWorkshop(Request $request, $id)
+
+    public function addWorkshop(Request $request)
     {
         $user = Auth::user();
-        $volunteer = $user->volunteer;
-        if (!$volunteer) {
-            return response()->json(['message' => 'Volunteer not found'], 404);
-        }
 
+        $volunteer = Volunteer::find($user->id);
+
+        if (!$volunteer) {
+            return response()->json(['message' => 'Volunteer profile record not found'], 404);
+        }
+        $volunteer->name = $volunteer->user ? $volunteer->user->name : 'Volunteer';
 
         $validated = $request->validate([
-            'title'     => 'required|string|max:255',
-            'age_group' => 'required|string|max:100', // e.g., "Kids 8-12", "Teens"
-            'location'  => 'required|string|max:255',
-            'workshop_time' => 'required|date_format:H:i', // Expecting time in HH:MM format
-            'date' => 'required|date|after:today', // Ensure the date is in the future
+            'title'         => 'required|string|max:255',
+            'age_group'     => 'required|string|max:100',
+            'location'      => 'required|string|max:255',
+            'workshop_time' => 'required|date_format:H:i',
+            'date'          => 'required|date|after_or_equal:today',
+
         ]);
 
 
