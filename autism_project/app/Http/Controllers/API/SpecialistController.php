@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SpecialistController extends Controller
 {
+
     public function dashboard()
     {
         $user = Auth::user();
@@ -21,6 +22,9 @@ class SpecialistController extends Controller
         }
         $specialistName = $specialist->user->name;
         $specialization = $specialist->specialization;
+        $yearsOfExperience = $specialist->years_of_experience;
+        $bio = $specialist->bio;
+        $location = $specialist->location;
         $todayAppointments = $specialist->appointments()
             ->whereDate('appointment_time', today())
             ->count();
@@ -46,6 +50,9 @@ class SpecialistController extends Controller
         return response()->json([
             'specialist_name' => $specialistName,
             'specialization' => $specialization,
+            'years_of_experience' => $yearsOfExperience,
+            'bio' => $bio,
+            'location' => $location,
             'next_appointment' => $nextAppointmentData,
             'today_appointments' => $todayAppointments
         ]);
@@ -171,7 +178,7 @@ class SpecialistController extends Controller
         $formattedAppointments = $upcomingAppointments->map(function ($appointment) {
             return [
                 'id' => $appointment->id,
-                'child_name' => $appointment->child->name ?? 'Unknown Child',
+                'child_name' => $appointment->child->full_name ?? 'Unknown Child',
                 'date' => $appointment->appointment_time->format('D d M'), // "Mon 12 Feb"
                 'time' => $appointment->appointment_time->format('h:i A'), // "09:00 AM"
                 'session_type' => $appointment->appointment_type, // "Therapy", "Check-up", etc.
@@ -190,29 +197,41 @@ class SpecialistController extends Controller
         $user = Auth::user();
         $specialist = $user->specialist;
 
-
         $children = Child::where('specialist_id', $specialist->id)
             ->with('parent.user')
             ->get();
 
         $formattedClients = $children->map(function ($child) {
 
-            $age = $child->dob ? now()->diffInYears($child->dob) . ' years' : 'N/A';
+            // Convert string to an explicit Carbon date instance safely to fix the math!
+            $birthDate = $child->dob ? \Illuminate\Support\Carbon::parse($child->dob) : null;
+            $age = $birthDate ? now()->diffInYears($birthDate) . ' years' : 'N/A';
 
             return [
                 'id' => $child->id,
                 'child_name' => $child->full_name,
                 'age' => $age,
+                'dob' => $child->dob, // Raw string form safely sent to Flutter
+                'gender' => $child->gender ?? 'Not specified',
+                'autism_level' => $child->autism_level ?? 'Not specified',
+                'behavioral_description' => $child->description ?? 'No description provided',
                 'parent_name' => $child->parent->user->name ?? 'N/A',
+                'parent_email' => $child->parent->user->email ?? 'N/A',
+                'parent_phone' => $child->parent->phone ?? 'N/A', // Pulled directly from the parent profile
                 'last_session_summary' => $child->last_session ?? 'No session notes yet',
                 'next_plan' => $child->next_plan ?? 'No plan set yet',
+                'diagnosis' => $child->diagnosis ?? 'No diagnosis added yet.',
+                'therapy_type' => $child->therapy_type ?? 'No therapy type selected yet.',
+                'session_frequency' => $child->session_frequency ?? 'Session frequency not specified.',
+                'goals' => $child->current_goals ?? 'No treatment goals added yet.',
+                'progress' => $child->recent_progress ?? 'No progress reports yet.',
+                'important_notes' => $child->important_notes ?? 'No important notes yet.',
             ];
         });
 
         return response()->json([
             'success' => true,
             'clients' => $formattedClients,
-
         ]);
     }
     public function getClientDetails($childId)
@@ -307,8 +326,8 @@ class SpecialistController extends Controller
                 'title' => $event->title,
                 'category' => $event->category,
                 'location' => $event->location,
-                'date' => $event->event_date->format('M d'),
-                'time' => $event->event_time ? $event->event_time->format('h:i A') : 'TBD',
+                'date' => \Carbon\Carbon::parse($event->event_date)->format('M d'),
+                'time' => \Carbon\Carbon::parse($event->event_time)->format('h:i A'),
                 'description' => $event->description,
                 'is_registered' => $event->isSpecialistRegistered($specialist->id),
 
