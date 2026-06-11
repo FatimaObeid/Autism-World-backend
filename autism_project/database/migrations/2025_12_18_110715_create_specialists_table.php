@@ -15,6 +15,10 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->primary();
             $table->string('specialization')->nullable();
             $table->string('license')->nullable();
+            $table->integer('years_of_experience')->nullable();
+            $table->text('bio')->nullable();
+            $table->string('location')->nullable();
+            $table->string('status')->default('pending');
             $table->timestamps();
             $table->foreign('id')->references('id')->on('users')->onDelete('cascade');
         });
