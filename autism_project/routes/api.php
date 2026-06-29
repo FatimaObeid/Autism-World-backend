@@ -66,4 +66,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/profile', [SettingsController::class, 'getProfile'])->name('mobile.profile.get');
     Route::put('/profile/update', [SettingsController::class, 'updateProfile'])->name('mobile.profile.update');
     Route::post('/profile/change-password', [SettingsController::class, 'changePassword'])->name('mobile.profile.change-password');
+    Route::get('/messages/parent/{parentId}', [ChatController::class, 'index']);
+    Route::post('/messages', [ChatController::class, 'store']);
+    
 });
