@@ -9,6 +9,7 @@ use App\Http\Controllers\API\AuthenticatedSessionController;
 use App\Http\Controllers\API\SettingsController;
 use App\Http\Controllers\API\SpecialistController;
 use App\Http\Controllers\API\VolunteerController;
+use App\Http\Controllers\API\ParentProfileController;
 use App\Http\Middleware\EnsureSpecialistIsApproved;
 
 Route::post('/register', [RegisterController::class, 'register'])->name('mobile.register');
@@ -16,20 +17,19 @@ Route::post('/login', [AuthenticatedSessionController::class, 'mobileLogin'])->n
 Route::post('/logout', [AuthenticatedSessionController::class, 'logout'])->name('mobile.logout');
 Route::middleware(['auth:sanctum'])->group(function () {
 
-Route::get('/parent/dashboard', [ParentProfileController::class, 'dashboard'])->name('mobile.parent.dashboard');
+Route::prefix('parent')->group(function () {
 
-    Route::get('/dashboard', [ParentProfileController::class, 'dashboard']);
+    Route::get('/dashboard', [ParentProfileController::class, 'dashboard'])->name('mobile.parent.dashboard');
     Route::post('/appointments', [ParentProfileController::class, 'bookAppointment']);
     Route::get('/specialists', [ParentProfileController::class, 'specialists']);
     Route::get('/resources', [ParentProfileController::class, 'resources']);
     Route::post('/daily-progress', [ParentProfileController::class, 'dailyProgress']);
-    
-    Route::get('/parent/workshops', [ParentWorkshopController::class, 'index']);
-    Route::post('/workshops/{id}/approve-attendance', [ParentWorkshopController::class, 'approveAttendance']);
-
+    Route::get('/workshops', [ParentProfileController::class, 'workshops']);
+    Route::post('/workshops/{id}/approve-attendance', [ParentProfileController::class, 'approveAttendance']);
     Route::get('/children', [ChildController::class, 'dashboard']);
     Route::post('/children', [ChildController::class, 'storeChild']);
 
+});
 
     Route::prefix('specialist')->middleware([EnsureSpecialistIsApproved::class])->group(function () {
 
