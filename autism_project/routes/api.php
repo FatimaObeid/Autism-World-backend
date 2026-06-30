@@ -16,6 +16,21 @@ Route::post('/login', [AuthenticatedSessionController::class, 'mobileLogin'])->n
 Route::post('/logout', [AuthenticatedSessionController::class, 'logout'])->name('mobile.logout');
 Route::middleware(['auth:sanctum'])->group(function () {
 
+Route::get('/parent/dashboard', [ParentProfileController::class, 'dashboard'])->name('mobile.parent.dashboard');
+
+    Route::get('/dashboard', [ParentProfileController::class, 'dashboard']);
+    Route::post('/appointments', [ParentProfileController::class, 'bookAppointment']);
+    Route::get('/specialists', [ParentProfileController::class, 'specialists']);
+    Route::get('/resources', [ParentProfileController::class, 'resources']);
+    Route::post('/daily-progress', [ParentProfileController::class, 'dailyProgress']);
+    
+    Route::get('/parent/workshops', [ParentWorkshopController::class, 'index']);
+    Route::post('/workshops/{id}/approve-attendance', [ParentWorkshopController::class, 'approveAttendance']);
+
+    Route::get('/children', [ChildController::class, 'dashboard']);
+    Route::post('/children', [ChildController::class, 'storeChild']);
+
+
     Route::prefix('specialist')->middleware([EnsureSpecialistIsApproved::class])->group(function () {
 
         Route::get('/dashboard', [SpecialistController::class, 'dashboard'])->name('mobile.specialist.dashboard');
