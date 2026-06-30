@@ -46,12 +46,12 @@ class VolunteerController extends Controller
         $volunteer->name = $volunteer->user ? $volunteer->user->name : 'Volunteer';
 
         $validated = $request->validate([
-            'title'         => 'required|string|max:255',
-            'age_group'     => 'required|string|max:100',
-            'location'      => 'required|string|max:255',
-            'workshop_time' => 'required|date_format:H:i',
-            'date'          => 'required|date|after_or_equal:today',
-
+            'title'           => 'required|string|max:255',
+            'age_group'       => 'nullable|string|max:100',
+            'location'        => 'required|string|max:255',
+            'workshop_time'   => 'required|date_format:H:i',
+            'date'            => 'required|date|after_or_equal:today',
+            'target_audience' => 'required|string|max:255',
         ]);
 
 
