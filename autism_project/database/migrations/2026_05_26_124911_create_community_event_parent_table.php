@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('community_event_parent', function (Blueprint $table) {
+        Schema::create('parent_workshop', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('parent_profile_id');
-            $table->unsignedBigInteger('community_event_id');
+            $table->unsignedBigInteger('workshop_id');
             $table->foreign('parent_profile_id')->references('id')->on('parent_profiles')->onDelete('cascade');
-            $table->foreign('community_event_id')->references('id')->on('community_events')->onDelete('cascade');
-             $table->enum('status', ['registered', 'attended', 'cancelled'])->default('registered');
+            $table->foreign('workshop_id')->references('id')->on('workshops')->onDelete('cascade');
+            $table->enum('status', ['registered', 'attended', 'cancelled'])->default('registered');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('community_event_parent');
+        Schema::dropIfExists('parent_workshop');
     }
 };
