@@ -5,10 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Specialist;
-use App\Models\ParentProfile; 
-use App\Models\Volunteer;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
@@ -18,7 +16,7 @@ class RegisterController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
-            'role' => 'required|in:Parent,Specialist,Volunteer',
+            'role' => 'required|in:Parent,Specialist,Volunteer,parent,specialist,volunteer',
 
             'date_of_birth' => 'nullable|date',
             'phone' => 'nullable|string',
@@ -27,55 +25,64 @@ class RegisterController extends Controller
             'specialization' => 'nullable|string',
             'license_number' => 'nullable|string',
 
-            'activity' => 'nullable|string',
-            'location' => 'nullable|string',
+            // Specialist-specific fields sent by the Flutter registration form
+            'experience_years' => 'nullable|integer',
+            'clinic_location'  => 'nullable|string',
+            'description'      => 'nullable|string',
+
+            'volunteer_type' => 'nullable|string',
         ]);
 
-        // 1. Create the base User (Only save fields that actually exist on the users table!)
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
-            // FIXED: Removed date_of_birth, phone, and address from here to stop the users table crash!
-        ]);
-
-        // 2. Create the specialized profile based on Role
-        if ($user->role === 'Specialist') {
-            Specialist::create([
-                'id' => $user->id, 
-                'specialization' => $request->specialization ?? 'General',
-                'license' => $request->license_number ?? 'N/A' 
+        DB::beginTransaction();
+        try {
+            $roleLowercase = strtolower($validated['role']);
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role' => $roleLowercase,
             ]);
-        }
 
-        if ($user->role === 'Parent') {
-            ParentProfile::create([ 
-                'id' => $user->id, 
-                'dob' => $request->date_of_birth, // Saves here correctly!
-                'phone' => $request->phone ?? 'N/A', 
-                'address' => $request->address ?? 'N/A' 
-            ]);
-        }
+            if ($roleLowercase === 'specialist') {
+                \App\Models\Specialist::create([
+                    'id'                  => $user->id,
+                    'specialization'      => $request->specialization ?? 'General',
+                    'license'             => $request->license_number ?? 'N/A',
+                    'years_of_experience' => $request->experience_years ?? 0,
+                    'location'            => $request->clinic_location ?? null,
+                    'bio'                 => $request->description ?? null,
+                    'status'              => 'pending',
+                ]);
+            } elseif ($roleLowercase === 'volunteer') {
+                \App\Models\Volunteer::create([
+                    'id' => $user->id,
+                    'activity' => $request->volunteer_type ?? 'General',
+                    'phone' => $request->phone ?? 'Not Specified',
+                ]);
+            } elseif ($roleLowercase === 'parent') {
+                \App\Models\ParentProfile::create([
+                    'id' => $user->id,
+                    'dob' => $request->date_of_birth ?? null,
+                    'phone' => $request->phone ?? 'Not Specified',
+                    'address' => $request->address ?? null,
+                ]);
+            }
 
-        if ($user->role === 'Volunteer') {
-            // FIXED: Explicitly creating the volunteer sub-record with proper columns
-            Volunteer::create([
-                'id' => $user->id, 
-                'name' => $user->name,
-                'activity' => $request->activity ?? 'General Support', 
-                'location' => $request->location ?? 'Remote', 
-            ]); 
-        }
+            DB::commit();
 
-        // 3. Issue Sanctum Token
-        $token = $user->createToken('auth_token')->plainTextToken;
-        
-        return response()->json([
-            'message' => 'Account created successfully',
-            'user' => $user,
-            'token' => $token,
-            'token_type' => 'Bearer',
-        ], 201);
+            $token = $user->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'message' => 'Account created successfully',
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Registration failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
