@@ -46,12 +46,13 @@ class ParentProfileController extends Controller
     public function bookAppointment(Request $request)
     {
         $user = Auth::user();
+        // Always extract the actual database profile ID linked to this authenticated user account
         $parentProfile = $user->parentprofile ?? $user->parentProfile;
 
         if (!$parentProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Parent profile not found.'
+                'message' => 'Parent profile not found for this user account.'
             ], 404);
         }
 
@@ -64,8 +65,20 @@ class ParentProfileController extends Controller
             'notes'            => 'nullable|string',
         ]);
 
+        // Safety verification: Ensure the child actually belongs to this parent profile before booking
+        $childExists = \App\Models\Child::where('id', $validated['child_id'])
+            ->where('parent_profile_id', $parentProfile->id)
+            ->exists();
+
+        if (!$childExists) {
+            return response()->json([
+                'success' => false,
+                'message' => "The selected child ID ({$validated['child_id']}) does not exist or belong to your profile."
+            ], 422);
+        }
+
         $appointment = Appointment::create([
-            'parent_profile_id' => $parentProfile->id,
+            'parent_profile_id' => $parentProfile->id, // Uses the solid verified relationship ID
             'specialist_id'     => $validated['specialist_id'],
             'child_id'          => $validated['child_id'],
             'appointment_time'  => $validated['appointment_time'],
@@ -79,23 +92,23 @@ class ParentProfileController extends Controller
             'message' => 'Appointment successfully requested and pending confirmation.',
             'appointment' => $appointment
         ], 201);
-    } 
+    }
 
     public function specialists()
     {
-        $specialists = \App\Models\Specialist::whereHas('user') 
-            ->with('user')
-            ->get();
+        // 1. Fetch ALL specialists from the table, even if the user relation is missing or pending
+        $specialists = \App\Models\Specialist::with('user')->get();
 
         $formattedSpecialists = $specialists->map(function ($spec) {
             return [
                 'id' => $spec->id,
-                'therapy_type' => $spec->therapy_type ?? 'General Therapy',
-                'experience_years' => $spec->experience_years ?? 0,
+                // Check multiple potential column names for therapy type or specialization
+                'therapy_type' => $spec->therapy_type ?? $spec->specialization ?? 'General Therapy',
+                'experience_years' => $spec->experience_years ?? $spec->years_of_experience ?? 0,
                 'user' => [
-                    'id' => $spec->user->id,
-                    'name' => $spec->user->name,
-                    'email' => $spec->user->email
+                    'id' => $spec->user->id ?? 0,
+                    'name' => $spec->user->name ?? 'Pending Name Assignment',
+                    'email' => $spec->user->email ?? 'No email found'
                 ]
             ];
         });
@@ -223,6 +236,24 @@ class ParentProfileController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Attendance approved and seat reserved successfully!'
+        ], 200);
+    }
+
+    /**
+     * Fetch community events filtered for parents.
+     */
+    public function events()
+    {
+        // Adjust column values to match exactly what you named them in your DB schema.
+        // We look for 'approved' status and ensure it's meant for parents.
+        $events = CommunityEvent::where('status', 'approved')
+            ->whereIn('target_audience', ['parent', 'Parents', 'Both'])
+            ->orderBy('date', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'events' => $events
         ], 200);
     }
 }
