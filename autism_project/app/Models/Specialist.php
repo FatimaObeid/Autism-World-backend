@@ -13,7 +13,7 @@ class Specialist extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['id', 'specialization', 'license'];
+    protected $fillable = ['id', 'specialization', 'license', 'years_of_experience', 'bio', 'location', 'status'];
     public $incrementing = false;
     protected $primaryKey = 'id';
 
@@ -29,17 +29,17 @@ class Specialist extends Model
 
     public function parents()
     {
-        return $this->belongsToMany(ParentProfile::class, 'appointments', 'specialist_id', 'parent_id')
+        return $this->belongsToMany(ParentProfile::class, 'appointments', 'specialist_id', 'parent_profile_id')
             ->withPivot('appointment_time', 'status')->withTimestamps();
     }
 
-    public function communityEvents()
+    public function workshops()
     {
         return $this->belongsToMany(
-            CommunityEvent::class,
-            'community_event_specialist',
+            Workshop::class,
+            'specialist_workshop',
             'specialist_id',
-            'community_event_id'
+            'workshop_id'
         )->withTimestamps();
     }
     public function children()
