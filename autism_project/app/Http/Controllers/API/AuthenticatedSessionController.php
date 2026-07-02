@@ -32,6 +32,12 @@ class AuthenticatedSessionController extends Controller
         // Create new token
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Include specialist approval status when applicable
+        $specialistStatus = null;
+        if ($user->role === 'specialist' && $user->specialist) {
+            $specialistStatus = $user->specialist->status; // 'pending', 'approved', 'declined', or null
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
@@ -41,6 +47,7 @@ class AuthenticatedSessionController extends Controller
                 'email'             => $user->email,
                 'role'              => $user->role, // Included role since your project uses it
                 'email_verified_at' => $user->email_verified_at,
+                'specialist_status' => $specialistStatus,
             ],
             'token'      => $token,
             'token_type' => 'Bearer',
