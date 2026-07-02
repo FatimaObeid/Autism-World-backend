@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 use function Pest\Laravel\json;
 
@@ -74,7 +75,7 @@ class AdminController extends Controller
         DB::transaction(function () use ($validated, $user, $volunteer) {
             $user->name = $validated['name'];
             $user->email = $validated['email'];
-            if (!empty($validated['password'])) {
+            if (!empty($validated['password'] ?? null)) {
                 $user->password = Hash::make($validated['password']);
             }
             $user->save();
@@ -93,11 +94,14 @@ class AdminController extends Controller
     public function deleteVolunteer($id)
     {
         $volunteer = Volunteer::findOrFail($id);
+        $user = User::find($volunteer->id);
 
-        $user = User::findOrFail($volunteer->id);
-
-        $volunteer->delete();
-        $user->delete();
+        DB::transaction(function () use ($volunteer, $user) {
+            $volunteer->delete();
+            if ($user) {
+                $user->delete();
+            }
+        });
 
         return response()->json(['message' => 'Volunteer profile deleted successfully'], 200);
     }
@@ -145,39 +149,52 @@ class AdminController extends Controller
     public function saveSpecialist(Request $request)
     {
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'email'          => 'required|email|unique:users,email',
-            'password'       => 'required|string|min:6',
-            'specialization' => 'required|string|max:255',
-            'license'        => 'nullable|string|max:255',
+            'name'                => 'required|string|max:255',
+            'email'               => 'required|email|unique:users,email',
+            'password'            => 'required|string|min:6',
+            'specialization'      => 'required|string|max:255',
+            'license'             => 'nullable|string|max:255',
             'years_of_experience' => 'nullable|integer',
-            'bio' => 'nullable|string',
-            'location' => 'nullable|string|max:255',
-            'status' => 'nullable|string|in:pending,approved,declined',
+            'bio'                 => 'nullable|string',
+            'location'            => 'nullable|string|max:255',
         ]);
-        $specialist = DB::transaction(function () use ($validated) {
-            $user = User::create([
-                'name'     => $validated['name'],
-                'email'    => $validated['email'],
-                'password' => Hash::make($validated['password']),
-                'role'    => 'specialist',
-            ]);
-            return Specialist::create([
-                'id'               => $user->id,
-                'specialization'   => $validated['specialization'] ?? null,
-                'license'          => $validated['license'] ?? null,
-                'years_of_experience' => $validated['years_of_experience'] ?? null,
-                'bio' => $validated['bio'] ?? null,
-                'location' => $validated['location'] ?? null,
-                'status' => 'approved',
-            ])->load('user');
-        });
 
+        try {
+            $specialist = DB::transaction(function () use ($validated) {
+                // Create the base user account
+                $user = User::create([
+                    'name'     => $validated['name'],
+                    'email'    => $validated['email'],
+                    'password' => Hash::make($validated['password']),
+                    'role'     => 'specialist',
+                ]);
 
-        return response()->json([
-            'message' => 'Specialist registered successfully',
-            'data' => $specialist
-        ], 201);
+                // Create the specialist profile with status directly in create
+                $profile = Specialist::create([
+                    'id'                  => $user->id,
+                    'specialization'      => $validated['specialization'] ?? null,
+                    'license'             => $validated['license'] ?? null,
+                    'years_of_experience' => $validated['years_of_experience'] ?? null,
+                    'bio'                 => $validated['bio'] ?? null,
+                    'location'            => $validated['location'] ?? null,
+                    'status'              => 'approved', // Set status during creation
+                ]);
+
+                // Eager load the user relation
+                return $profile->load('user');
+            });
+
+            return response()->json([
+                'message' => 'Specialist registered successfully',
+                'data'    => $specialist
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error saving specialist: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to save specialist',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
     public function updateSpecialist(Request $request, $id)
     {
@@ -196,7 +213,7 @@ class AdminController extends Controller
         DB::transaction(function () use ($validated, $user, $specialist) {
             $user->name = $validated['name'];
             $user->email = $validated['email'];
-            if (!empty($validated['password'])) {
+            if (!empty($validated['password'] ?? null)) {
                 $user->password = Hash::make($validated['password']);
             }
             $user->save();
@@ -217,8 +234,14 @@ class AdminController extends Controller
     {
         $specialist = Specialist::with('user')->findOrFail($id);
         $user = $specialist->user;
-        $specialist->delete();
-        $user->delete();
+
+        DB::transaction(function () use ($specialist, $user) {
+            $specialist->delete();
+            if ($user) {
+                $user->delete();
+            }
+        });
+
         return response()->json([
             'message' => 'Specialist profile deleted successfully'
         ], 200);
@@ -269,12 +292,11 @@ class AdminController extends Controller
             'dob'     => 'nullable|date',
             'phone'   => 'required|string|max:20',
             'address' => 'nullable|string|max:255',
-
         ]);
         DB::transaction(function () use ($validated, $user, $parentprofile) {
             $user->name = $validated['name'];
             $user->email = $validated['email'];
-            if (!empty($validated['password'])) {
+            if (!empty($validated['password'] ?? null)) {
                 $user->password = Hash::make($validated['password']);
             }
             $user->save();
@@ -282,7 +304,6 @@ class AdminController extends Controller
                 'dob' => $validated['dob'] ?? null,
                 'phone'        => $validated['phone'],
                 'address'        => $validated['address'] ?? null,
-
             ]);
         });
 
@@ -296,8 +317,14 @@ class AdminController extends Controller
     {
         $parentprofile = ParentProfile::with('user')->findOrFail($id);
         $user = $parentprofile->user;
-        $parentprofile->delete();
-        $user->delete();
+
+        DB::transaction(function () use ($parentprofile, $user) {
+            $parentprofile->delete();
+            if ($user) {
+                $user->delete();
+            }
+        });
+
         return response()->json([
             'message' => 'Parent deleted successfully'
         ], 200);
@@ -305,12 +332,12 @@ class AdminController extends Controller
     public function saveResource(Request $request)
     {
         $validated = $request->validate([
-            'title_en'       => 'required|string|max:255',
-            'title_ar'       => 'required|string|max:255',
-            'category_en'    => 'required|string|max:255',
-            'category_ar'    => 'required|string|max:255',
-            'description_en' => 'required|string',
-            'description_ar' => 'required|string',
+            'title_en'       => 'nullable|string|max:255',
+            'title_ar'       => 'nullable|string|max:255',
+            'category_en'    => 'nullable|string|max:255',
+            'category_ar'    => 'nullable|string|max:255',
+            'description_en' => 'nullable|string',
+            'description_ar' => 'nullable|string',
             'icon'           => 'nullable|string|max:255',
         ]);
 
@@ -320,5 +347,46 @@ class AdminController extends Controller
             'message' => 'Resource shared successfully',
             'data'    => $resource
         ], 201);
+    }
+    public function updateResource(Request $request, $id)
+    {
+        $resource = Resource::find($id);
+
+        if (!$resource) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'title_en'       => 'nullable|string|max:255',
+            'title_ar'       => 'nullable|string|max:255',
+            'category_en'    => 'nullable|string|max:255',
+            'category_ar'    => 'nullable|string|max:255',
+            'description_en' => 'nullable|string',
+            'description_ar' => 'nullable|string',
+            'icon'           => 'nullable|string|max:255',
+        ]);
+
+        $resource->update($validated);
+
+        return response()->json([
+            'message' => 'Resource updated successfully',
+            'data'    => $resource
+        ], 200);
+    }
+
+
+    public function deleteResource($id)
+    {
+        $resource = Resource::find($id);
+
+        if (!$resource) {
+            return response()->json(['message' => 'Resource not found'], 404);
+        }
+        $resource->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Resource deleted successfully'
+        ], 200);
     }
 }
