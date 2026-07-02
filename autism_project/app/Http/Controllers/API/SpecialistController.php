@@ -5,10 +5,12 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Child;
-use App\Models\CommunityEvent;
+use App\Models\Workshop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
 
 class SpecialistController extends Controller
 {
@@ -315,23 +317,24 @@ class SpecialistController extends Controller
     {
         $specialist = Auth::user()->specialist;
 
-        $events = CommunityEvent::where('event_date', '>=', now()->startOfDay())
-            ->orderBy('event_date', 'asc')
-            ->orderBy('event_time', 'asc')
+        // Fetch approved workshops where target audience includes 'specialist' or 'both' (case-insensitive)
+        $events = Workshop::where('status', 'approved')
+            ->whereIn(DB::raw('LOWER(target_audience)'), ['specialist', 'both'])
+            ->where('date', '>=', now()->startOfDay())
+            ->orderBy('date', 'asc')
+            ->orderBy('workshop_time', 'asc')
             ->get();
 
         $formattedEvents = $events->map(function ($event) use ($specialist) {
             return [
                 'id' => $event->id,
                 'title' => $event->title,
-                'category' => $event->category,
+                'category' => $event->age_group,
                 'location' => $event->location,
-                'date' => \Carbon\Carbon::parse($event->event_date)->format('M d'),
-                'time' => \Carbon\Carbon::parse($event->event_time)->format('h:i A'),
-                'description' => $event->description,
+                'date' => \Carbon\Carbon::parse($event->date)->format('M d'),
+                'time' => \Carbon\Carbon::parse($event->workshop_time)->format('h:i A'),
+                'description' => 'Target Audience: ' . ucfirst($event->target_audience),
                 'is_registered' => $event->isSpecialistRegistered($specialist->id),
-
-
             ];
         });
 
@@ -345,7 +348,7 @@ class SpecialistController extends Controller
     public function registerForEvent($eventId)
     {
         $specialist = Auth::user()->specialist;
-        $event = CommunityEvent::findOrFail($eventId);
+        $event = Workshop::findOrFail($eventId);
         if ($event->isSpecialistRegistered($specialist->id)) {
             return response()->json([
                 'success' => false,
@@ -365,7 +368,7 @@ class SpecialistController extends Controller
     {
         $specialist = Auth::user()->specialist;
 
-        $event = CommunityEvent::where('id', $eventId)->firstOrFail();
+        $event = Workshop::where('id', $eventId)->firstOrFail();
 
         if (!$event->isSpecialistRegistered($specialist->id)) {
             return response()->json([
