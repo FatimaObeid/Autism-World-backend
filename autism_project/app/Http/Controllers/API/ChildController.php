@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Specialist;
 use App\Models\User;
-use App\Models\ParentProfile; 
+use App\Models\ParentProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Child;
@@ -68,27 +68,42 @@ class ChildController extends Controller
             'behavioral_description' => 'nullable|string',
             'has_severe_condition'   => 'required|boolean',
             'medical_details'        => 'nullable|string',
-            'specialist_id'          => 'nullable|integer'
+            'specialist_id'          => 'nullable|integer',
+            'important_notes'        => 'nullable|string'
         ]);
 
-        // Fallback context: auto-assign database placeholder specialist row if missing
-        $specialistId = $validated['specialist_id'] ?? null;
-        if (!$specialistId) {
-            $fallback = \App\Models\User::where('id', '!=', $user->id)->first() ?? $user;
-            $specialistId = $fallback->id;
+        $child = Child::where('parent_profile_id', $parentProfile->id)->first();
+        if ($child) {
+            $child->update([
+                'full_name'         => $validated['full_name'],
+                'dob'               => $validated['dob'],
+                'gender'            => strtolower($validated['gender']),
+                'autism_level'      => $validated['autism_level'],
+                'description'       => $validated['behavioral_description'],
+                'has_other_disease' => $validated['has_severe_condition'] ? 'yes' : 'no',
+                'medical_condition' => $validated['has_severe_condition'] ? $validated['medical_details'] : null,
+                'important_notes'   => $validated['important_notes'] ?? $child->important_notes,
+            ]);
+        } else {
+            // Fallback context: auto-assign database placeholder specialist row if missing
+            $specialistId = $validated['specialist_id'] ?? null;
+            if (!$specialistId) {
+                $fallback = \App\Models\User::where('id', '!=', $user->id)->first() ?? $user;
+                $specialistId = $fallback->id;
+            }
+            $child = Child::create([
+                'parent_profile_id' => $parentProfile->id,
+                'specialist_id'     => $specialistId,
+                'full_name'         => $validated['full_name'],
+                'dob'               => $validated['dob'],
+                'gender'            => strtolower($validated['gender']),
+                'autism_level'      => $validated['autism_level'],
+                'description'       => $validated['behavioral_description'],
+                'has_other_disease' => $validated['has_severe_condition'] ? 'yes' : 'no',
+                'medical_condition' => $validated['has_severe_condition'] ? $validated['medical_details'] : null,
+                'important_notes'   => $validated['important_notes'] ?? null,
+            ]);
         }
-
-        $child = Child::create([
-            'parent_profile_id' => $parentProfile->id,
-            'specialist_id'     => $specialistId,
-            'full_name'         => $validated['full_name'],
-            'dob'               => $validated['dob'],
-            'gender'            => strtolower($validated['gender']),
-            'autism_level'      => $validated['autism_level'],
-            'description'       => $validated['behavioral_description'],
-            'has_other_disease' => $validated['has_severe_condition'] ? 'yes' : 'no',
-            'medical_condition' => $validated['has_severe_condition'] ? $validated['medical_details'] : null,
-        ]);
 
         return response()->json([
             'success' => true,
