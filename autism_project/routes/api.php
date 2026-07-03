@@ -1,36 +1,34 @@
 <?php
 
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\API\AdminController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\API\RegisterController;
 use App\Http\Controllers\API\AuthenticatedSessionController;
+use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\API\ChildController;
+use App\Http\Controllers\API\ParentProfileController;
 use App\Http\Controllers\API\SettingsController;
 use App\Http\Controllers\API\SpecialistController;
 use App\Http\Controllers\API\VolunteerController;
-use App\Http\Controllers\API\ParentProfileController;
 use App\Http\Middleware\EnsureSpecialistIsApproved;
 
 Route::post('/register', [RegisterController::class, 'register'])->name('mobile.register');
 Route::post('/login', [AuthenticatedSessionController::class, 'mobileLogin'])->name('mobile.login');
 Route::post('/logout', [AuthenticatedSessionController::class, 'logout'])->name('mobile.logout');
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::prefix('parent')->group(function () {
 
-Route::prefix('parent')->group(function () {
-
-    Route::get('/dashboard', [ParentProfileController::class, 'dashboard'])->name('mobile.parent.dashboard');
-    Route::post('/appointments', [ParentProfileController::class, 'bookAppointment']);
-    Route::get('/specialists', [ParentProfileController::class, 'specialists']);
-    Route::get('/resources', [ParentProfileController::class, 'resources']);
-    Route::post('/daily-progress', [ParentProfileController::class, 'dailyProgress']);
-    Route::get('/workshops', [ParentProfileController::class, 'workshops']);
-    Route::post('/workshops/{id}/approve-attendance', [ParentProfileController::class, 'approveAttendance']);
-    Route::get('/children', [ChildController::class, 'dashboard']);
-    Route::post('/children', [ChildController::class, 'storeChild']);
-
-});
-
+        Route::get('/dashboard', [ParentProfileController::class, 'dashboard'])->name('mobile.parent.dashboard');
+        Route::post('/appointments', [ParentProfileController::class, 'bookAppointment']);
+        Route::get('/specialists', [ParentProfileController::class, 'specialists']);
+        Route::get('/resources', [ParentProfileController::class, 'resources']);
+        Route::post('/daily-progress', [ParentProfileController::class, 'dailyProgress']);
+        Route::get('/workshops', [ParentProfileController::class, 'workshops']);
+        Route::post('/workshops/{id}/approve-attendance', [ParentProfileController::class, 'approveAttendance']);
+        Route::get('/children', [ChildController::class, 'dashboard']);
+        Route::post('/children', [ChildController::class, 'storeChild']);
+    });
     Route::prefix('specialist')->middleware([EnsureSpecialistIsApproved::class])->group(function () {
 
         Route::get('/dashboard', [SpecialistController::class, 'dashboard'])->name('mobile.specialist.dashboard');
@@ -75,13 +73,19 @@ Route::prefix('parent')->group(function () {
 
         //resource management
         Route::post('/resources', [AdminController::class, 'saveResource'])->name('mobile.admin.resources.add');
+        Route::put('/resources/{id}', [AdminController::class, 'updateResource'])->name('mobile.admin.resources.update');
+        Route::delete('/resources/{id}', [AdminController::class, 'deleteResource'])->name('mobile.admin.resources.delete');
     });
 
 
     Route::get('/profile', [SettingsController::class, 'getProfile'])->name('mobile.profile.get');
     Route::put('/profile/update', [SettingsController::class, 'updateProfile'])->name('mobile.profile.update');
     Route::post('/profile/change-password', [SettingsController::class, 'changePassword'])->name('mobile.profile.change-password');
-    Route::get('/messages/parent/{parentId}', [ChatController::class, 'index']);
-    Route::post('/messages', [ChatController::class, 'store']);
-    
+
+    // Chat routes — bidirectional, accessible by both specialists and parents
+    Route::get('/messages/parent/{parentId}', [ChatController::class, 'index']);          // specialist fetches thread
+    Route::get('/messages/specialist/{specialistId}', [ChatController::class, 'indexForParent']); // parent fetches thread
+    Route::post('/messages', [ChatController::class, 'store']);                            // send (role-aware)
+
+    Route::post('/chat', [AiChatController::class, 'chat']);
 });
