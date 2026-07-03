@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\Child;
 use App\Models\CommunityEvent;
 use App\Models\DailyProgress;
+use App\Models\Workshop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -37,8 +38,8 @@ class ParentProfileController extends Controller
 
         return response()->json([
             'success' => true,
-            'parent_name' => $user->name, 
-            'upcoming_appointment' => $upcomingAppointment, 
+            'parent_name' => $user->name,
+            'upcoming_appointment' => $upcomingAppointment,
             'children' => $children
         ], 200);
     }
@@ -96,8 +97,8 @@ class ParentProfileController extends Controller
 
     public function specialists()
     {
-        // 1. Fetch ALL specialists from the table, even if the user relation is missing or pending
-        $specialists = \App\Models\Specialist::with('user')->get();
+        // 1. Fetch ALL approved specialists from the table
+        $specialists = \App\Models\Specialist::where('status', 'approved')->with('user')->get();
 
         $formattedSpecialists = $specialists->map(function ($spec) {
             return [
@@ -151,7 +152,6 @@ class ParentProfileController extends Controller
                 'message' => 'Resources loaded successfully.',
                 'data'    => $resources
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -178,7 +178,7 @@ class ParentProfileController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        $formattedWorkshops = $workshops->map(function($workshop) use ($parentProfile) {
+        $formattedWorkshops = $workshops->map(function ($workshop) use ($parentProfile) {
             $hasApproved = DB::table('parent_workshop')
                 ->where('parent_profile_id', $parentProfile->id)
                 ->where('workshop_id', $workshop->id)
@@ -246,7 +246,7 @@ class ParentProfileController extends Controller
     {
         // Adjust column values to match exactly what you named them in your DB schema.
         // We look for 'approved' status and ensure it's meant for parents.
-        $events = CommunityEvent::where('status', 'approved')
+        $events = Workshop::where('status', 'approved')
             ->whereIn('target_audience', ['parent', 'Parents', 'Both'])
             ->orderBy('date', 'asc')
             ->get();
