@@ -28,12 +28,14 @@ class SpecialistController extends Controller
         $bio = $specialist->bio;
         $location = $specialist->location;
         $todayAppointments = $specialist->appointments()
-            ->whereDate('appointment_time', today())
+            ->where('status', 'approved')
+            ->whereDate('appointment_time', \Carbon\Carbon::now()->toDateString())
             ->count();
 
         $upcomingAppointments = $specialist->appointments()
             ->with('child')
             ->where('appointment_time', '>', now())
+            ->where('status', 'approved')
             ->orderBy('appointment_time', 'asc')
             ->get();
         $nextAppointment = $upcomingAppointments->first();
@@ -44,7 +46,6 @@ class SpecialistController extends Controller
                 'starts_in' => $this->getTimeUntil($nextAppointment->appointment_time),
                 'type' => $nextAppointment->type,
                 'child_name' => $nextAppointment->child->full_name,
-
             ];
         }
 
@@ -102,7 +103,7 @@ class SpecialistController extends Controller
             return [
                 'id' => $appt->id,
                 'parent_name' => $appt->child->parent->user->name ?? 'Unknown Parent',
-                'session_type' => $appt->appointment_type,
+                'session_type' => $appt->type,
                 'day_label' => $dayLabel,
                 'time' => $apptTime->format('h:i A'),
             ];
@@ -172,6 +173,7 @@ class SpecialistController extends Controller
         // Get all future appointments, ordered by date and time
         $upcomingAppointments = $specialist->appointments()
             ->where('appointment_time', '>', now())
+            ->where('status', 'approved')
             ->with('child')
             ->orderBy('appointment_time', 'asc')
             ->get();
@@ -183,7 +185,7 @@ class SpecialistController extends Controller
                 'child_name' => $appointment->child->full_name ?? 'Unknown Child',
                 'date' => $appointment->appointment_time->format('D d M'), // "Mon 12 Feb"
                 'time' => $appointment->appointment_time->format('h:i A'), // "09:00 AM"
-                'session_type' => $appointment->appointment_type, // "Therapy", "Check-up", etc.
+                'session_type' => $appointment->type, // "Therapy", "Check-up", etc.
                 'status' => $appointment->status,
             ];
         });
@@ -199,27 +201,36 @@ class SpecialistController extends Controller
         $user = Auth::user();
         $specialist = $user->specialist;
 
-        $children = Child::where('specialist_id', $specialist->id)
+        if (!$specialist) {
+            return response()->json(['success' => false, 'message' => 'Specialist profile not found.'], 404);
+        }
+
+        // Find clients via the appointments table, since specialist_id lives there.
+        // Get distinct child IDs that have an appointment with this specialist.
+        $childIds = Appointment::where('specialist_id', $specialist->id)
+            ->whereNotNull('child_id')
+            ->pluck('child_id')
+            ->unique();
+
+        $children = Child::whereIn('id', $childIds)
             ->with('parent.user')
             ->get();
 
         $formattedClients = $children->map(function ($child) {
-
-            // Convert string to an explicit Carbon date instance safely to fix the math!
             $birthDate = $child->dob ? \Illuminate\Support\Carbon::parse($child->dob) : null;
-            $age = $birthDate ? now()->diffInYears($birthDate) . ' years' : 'N/A';
+            $age = $birthDate ? (int)$birthDate->diffInYears(now()) . ' years' : 'N/A';
 
             return [
                 'id' => $child->id,
                 'child_name' => $child->full_name,
                 'age' => $age,
-                'dob' => $child->dob, // Raw string form safely sent to Flutter
+                'dob' => $child->dob,
                 'gender' => $child->gender ?? 'Not specified',
                 'autism_level' => $child->autism_level ?? 'Not specified',
                 'behavioral_description' => $child->description ?? 'No description provided',
-                'parent_name' => $child->parent->user->name ?? 'N/A',
-                'parent_email' => $child->parent->user->email ?? 'N/A',
-                'parent_phone' => $child->parent->phone ?? 'N/A', // Pulled directly from the parent profile
+                'parent_name' => optional(optional($child->parent)->user)->name ?? 'N/A',
+                'parent_email' => optional(optional($child->parent)->user)->email ?? 'N/A',
+                'parent_phone' => optional($child->parent)->phone ?? 'N/A',
                 'last_session_summary' => $child->last_session ?? 'No session notes yet',
                 'next_plan' => $child->next_plan ?? 'No plan set yet',
                 'diagnosis' => $child->diagnosis ?? 'No diagnosis added yet.',
@@ -240,72 +251,130 @@ class SpecialistController extends Controller
     {
         $specialist = Auth::user()->specialist;
 
+        if (!$specialist) {
+            return response()->json(['success' => false, 'message' => 'Specialist profile not found.'], 404);
+        }
+
+        // Verify the child has an appointment with this specialist
+        $hasAppointment = Appointment::where('specialist_id', $specialist->id)
+            ->where('child_id', $childId)
+            ->exists();
+
+        if (!$hasAppointment) {
+            return response()->json(['success' => false, 'message' => 'Client not found.'], 404);
+        }
 
         $child = Child::where('id', $childId)
-            ->where('specialist_id', $specialist->id)
-            ->with('parent.user')
+            ->with(['parent.user', 'dailyProgress' => function ($query) {
+                $query->orderBy('date', 'desc')->limit(1); // Get latest daily progress
+            }])
             ->firstOrFail();
 
+        // Parse dob as Carbon safely
+        $birthDate = $child->dob ? \Illuminate\Support\Carbon::parse($child->dob) : null;
+        $age = $birthDate ? (int)$birthDate->diffInYears(now()) . ' years' : 'N/A';
 
-        $age = $child->dob ? now()->diffInYears($child->dob) . ' years' : 'N/A';
+        // Get the latest daily progress
+        $latestProgress = $child->dailyProgress->first();
 
         $clientDetails = [
-            'id' => $child->id,
-            'child_name' => $child->full_name,
-            'age' => $age,
-            'dob' => $child->dob ? $child->dob->format('Y-m-d') : null,
-            'gender' => $child->gender ?? 'Not specified',
-            'parent_name' => $child->parent->user->name ?? 'N/A',
-            'parent_email' => $child->parent->user->email ?? 'N/A',
-            'parent_phone' => $child->parent->user->phone ?? 'N/A',
-            'behavioral_description' => $child->description ?? 'No description provided',
-            'autism_level' => $child->autism_level ?? 'Not specified',
-            'has_severe_condition' => $child->has_other_disease ?? false,
+            'id'                      => $child->id,
+            'child_name'              => $child->full_name,
+            'full_name'               => $child->full_name,
+            'age'                     => $age,
+            'dob'                     => $birthDate ? $birthDate->format('Y-m-d') : null,
+            'gender'                  => $child->gender ?? 'Not specified',
+            'parent_name'             => optional(optional($child->parent)->user)->name ?? 'N/A',
+            'parent_email'            => optional(optional($child->parent)->user)->email ?? 'N/A',
+            'parent_phone'            => optional($child->parent)->phone ?? 'N/A',
+            'parent_profile_id'       => optional($child->parent)->id,
+            // parent_user_id is the User ID — needed for chat (Message sender_id/recipient_id store User IDs)
+            'parent_user_id'          => optional(optional($child->parent)->user)->id,
+            'behavioral_description'  => $child->description ?? 'No description provided',
+            'autism_level'            => $child->autism_level ?? 'Not specified',
+            'has_severe_condition'    => $child->has_other_disease ?? false,
             'severe_condition_details' => $child->medical_condition ?? '',
-            'medical_details' => $child->medical_condition ?? 'No medical details',
-            'diagnosis' => $child->diagnosis ?? 'No diagnosis added',
-            'therapy_type' => $child->therapy_type ?? 'Not specified',
-            'session_frequency' => $child->session_frequency ?? 'Not set',
-            'last_session' => $child->last_session ?? 'No session notes yet',
-            'next_plan' => $child->next_plan ?? 'No plan set yet',
-            'goals' => $child->current_goals ?? 'No goals set',
-            'progress' => $child->recent_progress ?? 'No progress yet',
-            'important_notes' => $child->important_notes ?? 'No important notes',
+            'medical_details'         => $child->medical_condition ?? 'No medical details',
+            'diagnosis'               => $child->diagnosis ?? 'No diagnosis added',
+            'therapy_type'            => $child->therapy_type ?? 'Not specified',
+            'session_frequency'       => $child->session_frequency ?? 'Not set',
+            'last_session'            => $child->last_session ?? 'No session notes yet',
+            'next_plan'               => $child->next_plan ?? 'No plan set yet',
+            'current_goals'           => $child->current_goals ?? 'No goals set',
+            'goals'                   => $child->current_goals ?? 'No goals set',
+            'recent_progress'         => $child->recent_progress ?? 'No progress yet',
+            'progress'                => $child->recent_progress ?? 'No progress yet',
+            'important_notes'         => $child->important_notes ?? 'No important notes',
+            // Add daily progress data
+            'latest_daily_progress'   => $latestProgress ? [
+                'mood_level' => $latestProgress->mood_level,
+                'sensory_play' => $latestProgress->sensory_play,
+                'social_interaction' => $latestProgress->social_interaction,
+                'notes' => $latestProgress->notes,
+                'date' => $latestProgress->date->format('Y-m-d'),
+            ] : null,
         ];
 
         return response()->json([
             'success' => true,
-            'client' => $clientDetails
+            'client'  => $clientDetails
         ]);
     }
     public function updateSpecialistNotes(Request $request, $childId)
     {
         $specialist = Auth::user()->specialist;
 
-        $child = Child::where('id', $childId)
-            ->where('specialist_id', $specialist->id)
-            ->firstOrFail();
+        if (!$specialist) {
+            return response()->json(['success' => false, 'message' => 'Specialist profile not found.'], 404);
+        }
 
+        // Verify this specialist has an appointment with the child
+        // (same authorization pattern as getClientDetails).
+        // We do NOT use children.specialist_id because that column may not be
+        // populated for all children — the canonical link is via appointments.
+        $hasAppointment = Appointment::where('specialist_id', $specialist->id)
+            ->where('child_id', $childId)
+            ->exists();
+
+        if (!$hasAppointment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Client not found or you are not authorized to edit this record.'
+            ], 404);
+        }
+
+        $child = Child::findOrFail($childId);
+
+        // Accept both the field names Flutter sends and the legacy names
         $validated = $request->validate([
-            'diagnosis' => 'nullable|string',
-            'therapy_type' => 'nullable|string',
-            'session_frequency' => 'nullable|string',
-            'last_session_summary' => 'nullable|string',
-            'next_plan' => 'nullable|string',
-            'goals' => 'nullable|string',
-            'progress' => 'nullable|string',
-            'important_notes' => 'nullable|string',
+            'diagnosis'           => 'nullable|string',
+            'therapy_type'        => 'nullable|string',
+            'session_frequency'   => 'nullable|string',
+            // Flutter sends 'last_session'; legacy name was 'last_session_summary'
+            'last_session'        => 'nullable|string',
+            'last_session_summary'=> 'nullable|string',
+            'next_plan'           => 'nullable|string',
+            // Flutter sends 'current_goals'; legacy name was 'goals'
+            'current_goals'       => 'nullable|string',
+            'goals'               => 'nullable|string',
+            // Flutter sends 'recent_progress'; legacy name was 'progress'
+            'recent_progress'     => 'nullable|string',
+            'progress'            => 'nullable|string',
+            'important_notes'     => 'nullable|string',
         ]);
 
         $child->update([
-            'diagnosis' => $validated['diagnosis'] ?? $child->diagnosis,
-            'therapy_type' => $validated['therapy_type'] ?? $child->therapy_type,
-            'session_frequency' => $validated['session_frequency'] ?? $child->session_frequency,
-            'last_session' => $validated['last_session_summary'] ?? $child->last_session,
-            'next_plan' => $validated['next_plan'] ?? $child->next_plan,
-            'current_goals' => $validated['goals'] ?? $child->current_goals,
-            'recent_progress' => $validated['progress'] ?? $child->recent_progress,
-            'important_notes' => $validated['important_notes'] ?? $child->important_notes,
+            'diagnosis'        => $validated['diagnosis']        ?? $child->diagnosis,
+            'therapy_type'     => $validated['therapy_type']     ?? $child->therapy_type,
+            'session_frequency'=> $validated['session_frequency']?? $child->session_frequency,
+            // Accept both key variants for last session
+            'last_session'     => $validated['last_session']     ?? $validated['last_session_summary'] ?? $child->last_session,
+            'next_plan'        => $validated['next_plan']        ?? $child->next_plan,
+            // Accept both key variants for goals
+            'current_goals'    => $validated['current_goals']    ?? $validated['goals']    ?? $child->current_goals,
+            // Accept both key variants for recent progress
+            'recent_progress'  => $validated['recent_progress']  ?? $validated['progress'] ?? $child->recent_progress,
+            'important_notes'  => $validated['important_notes']  ?? $child->important_notes,
         ]);
 
         return response()->json([
