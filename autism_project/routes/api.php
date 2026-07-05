@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\API\AiChatController;
 use App\Http\Controllers\API\AdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\RegisterController;
@@ -24,8 +24,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/specialists', [ParentProfileController::class, 'specialists']);
         Route::get('/resources', [ParentProfileController::class, 'resources']);
         Route::post('/daily-progress', [ParentProfileController::class, 'dailyProgress']);
-        Route::get('/workshops', [ParentProfileController::class, 'workshops']);
-        Route::post('/workshops/{id}/approve-attendance', [ParentProfileController::class, 'approveAttendance']);
+        Route::get('/events', [ParentProfileController::class, 'events']);
+        Route::post('/events/{id}/approve-attendance', [ParentProfileController::class, 'approveAttendance']);
         Route::get('/children', [ChildController::class, 'dashboard']);
         Route::post('/children', [ChildController::class, 'storeChild']);
     });
