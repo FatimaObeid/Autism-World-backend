@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -18,7 +18,7 @@ class AiChatController extends Controller
         try {
             // 2. Forward the request to your FastAPI service
             // Make sure the URL matches where your FastAPI is running
-            $response = Http::timeout(30)->post('http://127.0.0.1:8000/ask', [
+            $response = Http::timeout(30)->post('http://127.0.0.1:8001/ask', [
                 'message' => $request->input('message')
             ]);
 
@@ -33,5 +33,7 @@ class AiChatController extends Controller
             Log::error('AI Chat Error: ' . $e->getMessage());
             return response()->json(['error' => 'Could not connect to AI service'], 500);
         }
+    }
+}
     }
 }
