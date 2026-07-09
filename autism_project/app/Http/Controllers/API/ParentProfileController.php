@@ -95,30 +95,31 @@ class ParentProfileController extends Controller
         ], 201);
     }
 
-    public function specialists()
-    {
-        // 1. Fetch ALL approved specialists from the table
-        $specialists = \App\Models\Specialist::where('status', 'approved')->with('user')->get();
+ public function specialists()
+{
+    $specialists = \App\Models\Specialist::where('status', 'approved')->with('user')->get();
 
-        $formattedSpecialists = $specialists->map(function ($spec) {
-            return [
-                'id' => $spec->id,
-                // Check multiple potential column names for therapy type or specialization
-                'therapy_type' => $spec->therapy_type ?? $spec->specialization ?? 'General Therapy',
-                'experience_years' => $spec->experience_years ?? $spec->years_of_experience ?? 0,
-                'user' => [
-                    'id' => $spec->user->id ?? 0,
-                    'name' => $spec->user->name ?? 'Pending Name Assignment',
-                    'email' => $spec->user->email ?? 'No email found'
-                ]
-            ];
-        });
+    $formattedSpecialists = $specialists->map(function ($spec) {
+        return [
+            'id' => $spec->id,
+            'therapy_type' => $spec->therapy_type ?? $spec->specialization ?? 'General Therapy',
+            'experience_years' => $spec->experience_years ?? $spec->years_of_experience ?? 0,
+            'bio' => $spec->bio ?? $spec->description ?? 'No biography overview provided.',
+            'location' => $spec->location ?? $spec->clinic_address ?? 'Remote / Online',
+            
+            'user' => [
+                'id' => $spec->user->id ?? 0,
+                'name' => $spec->user->name ?? 'Pending Name Assignment',
+                'email' => $spec->user->email ?? 'No email found'
+            ]
+        ];
+    });
 
-        return response()->json([
-            'success' => true,
-            'specialists' => $formattedSpecialists
-        ], 200);
-    }
+    return response()->json([
+        'success' => true,
+        'specialists' => $formattedSpecialists
+    ], 200);
+}
 
     public function dailyProgress(Request $request)
     {
@@ -242,18 +243,60 @@ class ParentProfileController extends Controller
     /**
      * Fetch community events filtered for parents.
      */
-    public function events()
+   public function events()
     {
-        // Adjust column values to match exactly what you named them in your DB schema.
-        // We look for 'approved' status and ensure it's meant for parents.
-        $events = Workshop::where('status', 'approved')
-            ->whereIn('target_audience', ['parent', 'Parents', 'Both'])
+        $user = Auth::user();
+        $parentId = null;
+        if ($user) {
+            $parentProfile = $user->parentprofile ?? $user->parentProfile;
+            $parentId = $parentProfile ? $parentProfile->id : null;
+        }
+
+        $events = Workshop::with('volunteer.user')
+            ->where('status', 'approved')
+            ->whereIn('target_audience', ['parent', 'Parents', 'Both', 'parent '])
             ->orderBy('date', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($event) use ($parentId) {
+                
+                // 1. Bulletproof Date Formatting (Prevents string/Carbon crashes)
+                $formattedDate = null;
+                if ($event->date) {
+                    $formattedDate = \Carbon\Carbon::parse($event->date)->format('Y-m-d');
+                }
+
+                // 2. Bulletproof Time Formatting
+                $formattedTime = null;
+                if ($event->workshop_time) {
+                    $formattedTime = \Carbon\Carbon::parse($event->workshop_time)->format('H:i');
+                }
+
+                // 3. Bulletproof Registration Check (Bypasses Workshop.php completely!)
+                $isRegistered = false;
+                if ($parentId) {
+                    $isRegistered = \Illuminate\Support\Facades\DB::table('parent_workshop')
+                        ->where('workshop_id', $event->id)
+                        ->where('parent_profile_id', $parentId)
+                        ->exists();
+                }
+
+                return [
+                    'id' => $event->id,
+                    'title' => $event->title,
+                    'date' => $formattedDate,
+                    'time' => $formattedTime,
+                    'location' => $event->location,
+                    'description' => $event->description ?? 'No description provided.',
+                    'organizer' => $event->volunteer && $event->volunteer->user 
+                                    ? $event->volunteer->user->name 
+                                    : 'Admin',
+                    'is_registered' => $isRegistered,
+                ];
+            });
 
         return response()->json([
             'success' => true,
-            'events' => $events
+            'data' => $events
         ], 200);
     }
 }
